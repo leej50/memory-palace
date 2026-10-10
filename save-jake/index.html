@@ -553,13 +553,20 @@ function layout() {
 }
 const pierTop = () => H - L.pierH;
 
-const JAKE_PANIC = ["HELP", "there are SHARKS", "i can't swim good", "it's cold", "is that a fin", "sarah pls", "throw the tube!!", "it's circling", "tell my mom i love her", "i felt something touch my leg"];
+const JAKE_PANIC = ["HELP", "there are SHARKS", "i can't swim good", "it's cold", "is that a fin", "sarah pls", "throw the tube!!", "it's circling", "tell my mom i love her", "i felt something touch my leg", "🖕 you too ting"];
 const JAKE_PUSHED = [
-  "TING.", "again??", "i'm starting to think this is on purpose", "ting i will remember this", "one more. please.", "I'M OUT. I'M OUT.",
+  "TING.", "🖕 you too ting", "i'm starting to think this is on purpose", "ting i will remember this", "one more. please.", "I'M OUT. I'M OUT.",
 ];
-const TING_PUSH = ["oops", "sorry bao bei", "slipped", "reflex", "sorry bao bei", "...fine"];
-const TING_IDLE = ["he'll be fine", "he's dramatic", "want a snack?", "nice throw", "lol", "i'll get a towel", "sorry bao bei"];
-const SARAH_MISS = ["missed", "ugh", "closer", "hang on", "he keeps MOVING"];
+const TING_PUSH = ["oops", "sorry bao bei", "baby shark dududu", "reflex", "sorry bao bei", "...fine"];
+const TING_IDLE = ["he'll be fine", "he's dramatic", "want a snack?", "nice throw", "lol", "i'll get a towel", "sorry bao bei", "baby shark dududu", "baby shark dududu"];
+const TING_EATEN = ["oh no", "lol", "rip", "he's fine probably", "sorry bao bei", "baby shark dududu 🦈"];
+const SARAH_START = ["JAKE?? JAKE!!!", "OH MY GOD", "HOLD ON I'M COMING!!"];
+const SARAH_THROW = ["GO GO GO", "pleeeease 🙏", "CATCH IT", "this one. THIS ONE.", "ahhhhh"];
+const SARAH_HIT = ["YESSS 😭", "I GOT HIM!!", "SWIM SWIM SWIM", "LET'S GOOO", "ok ok come here!!"];
+const SARAH_MISS = ["NOOO", "ugh!!", "SO CLOSE", "he keeps MOVING", "JAKE STAY STILL", "ok ok ok again", "why is this so hard 😭"];
+const SARAH_PUSH = ["TING WHAT THE HELL", "TING. TING. TING.", "are you SERIOUS right now", "I JUST SAVED HIM", "TING I SWEAR"];
+const SARAH_EATEN = ["JAKE NOOOO 😭", "NOT LIKE THIS", "SPIT HIM OUT", "oh my god oh my god", "JAKE!!!"];
+const SARAH_IDLE = ["ok ok i got this", "hold on hold on", "i'm coming jake!!", "don't look at the sharks", "focus. FOCUS.", "ting do something!!"];
 
 function say(text, dur = 2.2) { G.bubble = { text, until: G.t + dur }; }
 function tingSay(text, dur = 2.4) { G.tingBubble = { text, until: G.t + dur }; }
@@ -584,8 +591,8 @@ function eaten(shark) {
   G.chomp = { x: G.jake.x, y: G.jake.y - 30, until: G.t + 1.2 };
   SFX.chomp();
   G.eater = shark;
-  tingSay(pick(["oh no", "lol", "rip", "he's fine probably", "sorry bao bei"]), 2);
-  sarahSay(pick(["JAKE", "no!!", "oh no"]), 1.6);
+  tingSay(pick(TING_EATEN), 2);
+  sarahSay(pick(SARAH_EATEN), 2.4);
   hint.textContent = "Eaten. He got spat back out, but this rescue restarts. Sharks close in slowly, so don't take forever.";
   setPhase("eaten");
 }
@@ -596,7 +603,7 @@ function startGame() {
   resetSharks();
   updateHud();
   setPhase("aim");
-  say("HELP", 2.5); tingSay("whoops", 3);
+  say("HELP", 2.5); tingSay("whoops", 3); sarahSay(pick(SARAH_START), 2.6);
   hint.textContent = "Press and drag back anywhere, like a slingshot. Let go to launch the tube. If a fin reaches Jake, he's lunch.";
 }
 
@@ -633,6 +640,7 @@ function release(e) {
   const dist = Math.hypot(v.x1 - s.x, v.y1 - s.y);
   G.tube = { x0: s.x, y0: s.y, x1: v.x1, y1: v.y1, start: G.t, dur: 0.45 + dist / 900, spin: Math.random() * 6 };
   SFX.throw();
+  sarahSay(pick(SARAH_THROW), 1.4);
   say(pick(["please", "yes!!", "here??", "ahh", "to ME"]), 1);
 }
 canvas.addEventListener("pointerup", release);
@@ -647,6 +655,7 @@ function landTube() {
     G.tube = null;
     setPhase("swim");
     say(pick(["got it!!", "YES", "ok ok ok", "swimming!!"]), 1.6);
+    sarahSay(pick(SARAH_HIT), 2.2);
     hint.textContent = "He's got it. Here he comes.";
     return;
   }
@@ -654,9 +663,9 @@ function landTube() {
   G.splashes.push({ x: T.x1, y: T.y1, t: 0 });
   if (!offWater) SFX.splash();
   G.tube = null;
-  if (offWater) { sarahSay("that's the dock"); hint.textContent = "That one landed on the dock. Aim for the water."; return; }
-  if (shark) { G.stolen++; shark.r = SHARK_FAR; say("you threw it to the SHARK", 2); tingSay("lol", 1.6); hint.textContent = "The shark took it and swam off with it. At least it's further away now."; return; }
-  sarahSay(pick(SARAH_MISS));
+  if (offWater) { sarahSay("THAT'S THE DOCK 😭", 2); hint.textContent = "That one landed on the dock. Aim for the water."; return; }
+  if (shark) { G.stolen++; shark.r = SHARK_FAR; say("you threw it to the SHARK", 2); tingSay("lol", 1.6); sarahSay("NOT YOU 🦈", 2); hint.textContent = "The shark took it and swam off with it. At least it's further away now."; return; }
+  sarahSay(pick(SARAH_MISS), 2);
   say(pick(["missed!!", "that's not me", "closer!!", "other way!!", "lead me a bit!!"]), 1.6);
   hint.textContent = "Missed. He drifts, so aim a little ahead of him.";
 }
@@ -678,7 +687,9 @@ function update(dt) {
     if (biter) { eaten(biter); return; }
     if (G.t > G.nextChatter) {
       G.nextChatter = G.t + 3.5 + Math.random() * 3;
-      if (G.t > G.bubble.until) say(pick(JAKE_PANIC), 1.8);
+      const who = Math.random();
+      if (who < 0.45 && G.t > G.bubble.until) say(pick(JAKE_PANIC), 1.8);
+      else if (who < 0.75) sarahSay(pick(SARAH_IDLE), 2);
       else tingSay(pick(TING_IDLE), 1.8);
     }
   } else if (G.phase === "eaten") {
@@ -709,7 +720,7 @@ function update(dt) {
         setPhase("win");
         say(JAKE_PUSHED[JAKE_PUSHED.length - 1], 4);
         tingSay("...fine", 3);
-        sarahSay("NO.", 3);
+        sarahSay("WE DID IT 😭🎉", 4);
         hint.textContent = "Five. Ting gives up. Jake is on dry land.";
         SFX.win();
         burst();
@@ -739,6 +750,7 @@ function update(dt) {
         SFX.splash();
         j.drift = Math.random() * Math.PI * 2;
         say(JAKE_PUSHED[Math.min(G.saves - 1, JAKE_PUSHED.length - 2)], 2.4);
+        sarahSay(SARAH_PUSH[Math.min(G.saves - 1, SARAH_PUSH.length - 1)], 2.8);
         hint.textContent = `${CONFIG.pusher} pushed him back in. ${CONFIG.savesToWin - G.saves} to go.`;
         setPhase("aim");
       }
@@ -843,14 +855,8 @@ function drawShark(s, shadow) {
 function headAndFace(x, y, r, panic) {
   ctx.fillStyle = "#f2c9a0";
   ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
-  // dark hair: round cap with a soft sweep to one side
   ctx.fillStyle = "#2b1d14";
-  ctx.beginPath();
-  ctx.arc(x, y - r * 0.22, r * 1.0, Math.PI * 1.0, Math.PI * 2.0);
-  ctx.quadraticCurveTo(x + r * 0.95, y - r * 0.05, x + r * 0.6, y - r * 0.3);
-  ctx.quadraticCurveTo(x, y - r * 0.5, x - r * 0.7, y - r * 0.3);
-  ctx.quadraticCurveTo(x - r * 1.0, y - r * 0.2, x - r * 1.0, y - r * 0.22);
-  ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.arc(x, y - r * 0.25, r, Math.PI * 1.05, Math.PI * 1.95); ctx.lineTo(x + r, y - r * 0.35); ctx.lineTo(x - r, y - r * 0.35); ctx.fill();
   ctx.fillStyle = "#fff";
   ctx.beginPath(); ctx.arc(x - r * 0.35, y, r * 0.27, 0, 7); ctx.arc(x + r * 0.35, y, r * 0.27, 0, 7); ctx.fill();
   ctx.fillStyle = "#1c2a33";
@@ -858,12 +864,6 @@ function headAndFace(x, y, r, panic) {
   ctx.beginPath(); ctx.arc(x - r * 0.35 + jit, y, r * 0.12, 0, 7); ctx.arc(x + r * 0.35 + jit, y, r * 0.12, 0, 7); ctx.fill();
   ctx.fillStyle = "#7a2a2a";
   ctx.beginPath(); ctx.ellipse(x, y + r * 0.5, r * 0.26, r * 0.3 + Math.sin(G.t * 12) * 1.5 * panic, 0, 0, 7); ctx.fill();
-  // light, thin frames
-  ctx.strokeStyle = "rgba(70,80,90,.6)"; ctx.lineWidth = Math.max(1, r * 0.06);
-  const gw = r * 0.6, gh = r * 0.42;
-  ctx.beginPath(); ctx.roundRect(x - r * 0.68, y - gh / 2, gw, gh, 5); ctx.stroke();
-  ctx.beginPath(); ctx.roundRect(x + r * 0.08, y - gh / 2, gw, gh, 5); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(x - r * 0.08, y - r * 0.04); ctx.lineTo(x + r * 0.08, y - r * 0.04); ctx.stroke();
 }
 function drawJakeWater() {
   const j = G.jake, x = j.x, y = j.y;
@@ -873,7 +873,7 @@ function drawJakeWater() {
   const wave = Math.sin(G.t * 9) * 14 * panic;
   ctx.beginPath(); ctx.moveTo(x - 14, y + 6); ctx.lineTo(x - 30, y - 26 - wave); ctx.stroke();
   ctx.beginPath(); ctx.moveTo(x + 14, y + 6); ctx.lineTo(x + 30, y - 26 + wave); ctx.stroke();
-  ctx.fillStyle = "#e3e8ee";
+  ctx.fillStyle = "#ffffff";
   ctx.beginPath(); ctx.ellipse(x, y + 12, 20, 12, 0, Math.PI, 0); ctx.fill();
   headAndFace(x, y - 10, 17, panic);
   ctx.strokeStyle = "rgba(255,255,255,.65)"; ctx.lineWidth = 3;
@@ -886,10 +886,8 @@ function drawJakeDock() {
   for (let i = 0; i < 3; i++) ctx.fillRect(x - 10 + i * 10, feet - 30 + ((G.t * 40 + i * 17) % 30), 2, 5);
   ctx.strokeStyle = "#2d3436"; ctx.lineWidth = 6; ctx.lineCap = "round";
   ctx.beginPath(); ctx.moveTo(x - 6, feet - 14); ctx.lineTo(x - 7, feet); ctx.moveTo(x + 6, feet - 14); ctx.lineTo(x + 7, feet); ctx.stroke();
-  ctx.fillStyle = "#e3e8ee";
+  ctx.fillStyle = "#ffffff";
   ctx.beginPath(); ctx.roundRect(x - 13, feet - 50, 26, 38, 8); ctx.fill();
-  ctx.strokeStyle = "#b9c3cf"; ctx.lineWidth = 1.5;
-  ctx.beginPath(); ctx.moveTo(x - 5, feet - 50); ctx.lineTo(x, feet - 43); ctx.lineTo(x + 5, feet - 50); ctx.stroke();
   ctx.strokeStyle = "#f2c9a0"; ctx.lineWidth = 6;
   ctx.beginPath(); ctx.moveTo(x - 11, feet - 44); ctx.lineTo(x - 22, feet - 22); ctx.moveTo(x + 11, feet - 44); ctx.lineTo(x + 22, feet - 22); ctx.stroke();
   headAndFace(x, feet - 62, 14, 0.3);
@@ -942,56 +940,23 @@ function drawPier() {
   ctx.fillStyle = "#8f5527"; ctx.fillRect(0, top, W, 5);
 }
 function person(x, top, shirt, hair, label, opts) {
-  const { armAngle = 0, grin = false, lean = 0, hairLen = 16, bangs = false, earrings = false, tank = false } = opts || {};
+  const { armAngle = 0, grin = false, lean = 0 } = opts || {};
   ctx.save(); ctx.translate(x, top); ctx.rotate(lean);
-  // hair behind the head: two soft strands that fall past the shoulders
-  ctx.fillStyle = hair;
-  if (hairLen > 18) {
-    const bottom = -64 + hairLen;
-    for (const d of [-1, 1]) {
-      ctx.beginPath();
-      ctx.moveTo(d * 7, -62);
-      ctx.lineTo(d * 14, -62);
-      ctx.quadraticCurveTo(d * 17, -40, d * 19, bottom);
-      ctx.quadraticCurveTo(d * 13, bottom + 4, d * 8, bottom - 2);
-      ctx.lineTo(d * 8, -50);
-      ctx.closePath(); ctx.fill();
-    }
-  }
   ctx.strokeStyle = "#2d3436"; ctx.lineWidth = 6; ctx.lineCap = "round";
   ctx.beginPath(); ctx.moveTo(-6, -12); ctx.lineTo(-6, 0); ctx.moveTo(6, -12); ctx.lineTo(6, 0); ctx.stroke();
-  if (tank) {
-    ctx.strokeStyle = "#f2c9a0"; ctx.lineWidth = 7;
-    ctx.beginPath(); ctx.moveTo(-9, -42); ctx.lineTo(-9, -30); ctx.moveTo(9, -42); ctx.lineTo(9, -30); ctx.stroke();
-  }
   ctx.fillStyle = shirt;
-  ctx.beginPath();
-  if (tank) ctx.roundRect(-10, -44, 20, 34, [3, 3, 8, 8]); else ctx.roundRect(-12, -46, 24, 36, 8);
-  ctx.fill();
+  ctx.beginPath(); ctx.roundRect(-12, -46, 24, 36, 8); ctx.fill();
   ctx.fillStyle = "#f2c9a0"; ctx.beginPath(); ctx.arc(0, -56, 12, 0, 7); ctx.fill();
-  // hair cap
-  ctx.fillStyle = hair;
-  ctx.beginPath(); ctx.arc(0, -60, 12, Math.PI, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = hair; ctx.beginPath(); ctx.arc(0, -60, 12, Math.PI, Math.PI * 2); ctx.fill();
   ctx.fillRect(-12, -60, 4, 16); ctx.fillRect(8, -60, 4, 16);
-  if (bangs) {
-    // wispy, parted fringe: two soft curves that leave the middle of the forehead open
-    ctx.beginPath(); ctx.moveTo(-12, -60); ctx.quadraticCurveTo(-7, -60, -3, -52); ctx.quadraticCurveTo(-9, -52, -12, -56); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(12, -60); ctx.quadraticCurveTo(7, -60, 3, -52); ctx.quadraticCurveTo(9, -52, 12, -56); ctx.fill();
-  }
   ctx.strokeStyle = "#1c2a33"; ctx.lineWidth = 2;
   ctx.beginPath();
   if (grin) ctx.arc(0, -55, 5, 0.15 * Math.PI, 0.85 * Math.PI); else { ctx.moveTo(-4, -52); ctx.lineTo(4, -52); }
   ctx.stroke();
-  ctx.fillStyle = "#1c2a33"; ctx.beginPath(); ctx.arc(-4, -57, 1.5, 0, 7); ctx.arc(4, -57, 1.5, 0, 7); ctx.fill();
-  if (earrings) {
-    ctx.strokeStyle = "#e6b84a"; ctx.lineWidth = 1.4;
-    ctx.beginPath(); ctx.arc(-12.5, -50, 2.2, 0, 7); ctx.stroke();
-    ctx.beginPath(); ctx.arc(12.5, -50, 2.2, 0, 7); ctx.stroke();
-  }
+  ctx.fillStyle = "#1c2a33"; ctx.beginPath(); ctx.arc(-4, -58, 1.5, 0, 7); ctx.arc(4, -58, 1.5, 0, 7); ctx.fill();
   ctx.strokeStyle = "#f2c9a0"; ctx.lineWidth = 6;
   ctx.beginPath(); ctx.moveTo(10, -38); ctx.lineTo(10 + Math.cos(armAngle) * 26, -38 + Math.sin(armAngle) * 26); ctx.stroke();
   ctx.restore();
-  if (!label) return;
   ctx.font = "700 11px Fredoka, sans-serif"; ctx.fillStyle = "#fff4e1"; ctx.textAlign = "center";
   ctx.fillText(label, x, top + 16);
 }
@@ -1000,16 +965,15 @@ function drawSarah() {
   if (G.drag) { const v = aimVector(G.drag); if (v) arm = Math.atan2(-v.ny, -v.nx); }
   else if (G.tube) arm = Math.atan2(G.tube.y1 - G.tube.y0, G.tube.x1 - G.tube.x0);
   const label = (CONFIG.friend || "YOU").toUpperCase();
-  person(L.sarahX, pierTop(), "#52d6c3", "#6b4423", label, { armAngle: arm, hairLen: 28 });
+  person(L.sarahX, pierTop(), "#52d6c3", "#5a3a1e", label, { armAngle: arm });
 }
 function drawTing() {
   const sw = G.tingSwing;
   const x = L.tingX - sw * (L.tingX - L.climbX - 36);
-  person(x, pierTop(), "#111111", "#2b1a10", sw > 0.01 ? "" : CONFIG.pusher.toUpperCase(), {
+  person(x, pierTop(), "#6c5ce7", "#1a1210", CONFIG.pusher.toUpperCase(), {
     armAngle: Math.PI + 0.2 - sw * 0.4 + (sw ? 0 : Math.sin(G.t * 3) * 0.1),
     grin: true,
     lean: -sw * 0.25,
-    hairLen: 40, bangs: true, earrings: true, tank: true,
   });
 }
 function drawBubble(b, x, y) {
