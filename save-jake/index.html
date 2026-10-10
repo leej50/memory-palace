@@ -529,6 +529,7 @@ const G = {
   t: 0, last: 0,
   saves: 0, throws: 0, stolen: 0, eatenCount: 0,
   chomp: null, eater: null,
+  hp: null, hpDone: false,
   jake: { x: 0, y: 0, drift: 0, onDock: false, under: false },
   sharks: [],
   tube: null,          // { x0,y0,x1,y1,start,dur }
@@ -752,6 +753,11 @@ function update(dt) {
         say(JAKE_PUSHED[Math.min(G.saves - 1, JAKE_PUSHED.length - 2)], 2.4);
         sarahSay(SARAH_PUSH[Math.min(G.saves - 1, SARAH_PUSH.length - 1)], 2.8);
         hint.textContent = `${CONFIG.pusher} pushed him back in. ${CONFIG.savesToWin - G.saves} to go.`;
+        if (G.saves === 3 && !G.hpDone) {
+          G.hpDone = true;
+          G.hp = { start: G.t + 0.9, reacted: false };
+          hint.textContent = `${CONFIG.pusher} pushed him back in. ${CONFIG.savesToWin - G.saves} to go. Also: look up.`;
+        }
         setPhase("aim");
       }
     }
@@ -788,6 +794,7 @@ function draw() {
     for (let x = -20; x <= W + 20; x += 8) ctx.lineTo(x, y + Math.sin(x * 0.04 + t * 1.6 + i) * 3);
     ctx.stroke();
   }
+  drawHarry();
   for (const s of G.sharks) drawShark(s, true);
   if (G.phase === "aim") drawDanger();
   if (!G.jake.onDock && !G.jake.under) drawJakeWater();
@@ -815,6 +822,64 @@ function draw() {
   if (!G.jake.under) drawBubble(G.bubble, G.jake.x, G.jake.y - (G.jake.onDock ? 70 : 44));
   drawBubble(G.tingBubble, L.tingX, pierTop() - 78);
   drawBubble(G.sarahBubble, L.sarahX, pierTop() - 78);
+}
+function drawHarry() {
+  const h = G.hp; if (!h) return;
+  const p = (G.t - h.start) / 8;
+  if (p < 0) return;
+  if (p > 1) { G.hp = null; return; }
+  if (p > 0.28 && !h.reacted) {
+    h.reacted = true;
+    say("was that harry potter??", 3);
+    sarahSay("HARRY???? 😭", 3.5);
+    tingSay("nice broom", 3);
+  }
+  const x = -80 + (W + 160) * p;
+  const y = L.horizon * 0.52 + Math.sin(G.t * 2.6) * 6;
+  ctx.save(); ctx.translate(x, y); ctx.scale(1.35, 1.35); ctx.rotate(-0.06);
+  ctx.lineCap = "round";
+  // scarf trailing behind
+  const flap = Math.sin(G.t * 9) * 4;
+  ctx.lineWidth = 4;
+  ctx.strokeStyle = "#a4161a";
+  ctx.beginPath(); ctx.moveTo(-5, -10); ctx.quadraticCurveTo(-18, -14 + flap, -36, -6 - flap); ctx.stroke();
+  ctx.strokeStyle = "#e3b23c"; ctx.setLineDash([4, 6]);
+  ctx.beginPath(); ctx.moveTo(-5, -10); ctx.quadraticCurveTo(-18, -14 + flap, -36, -6 - flap); ctx.stroke();
+  ctx.setLineDash([]);
+  // broom
+  ctx.strokeStyle = "#8a5a2b"; ctx.lineWidth = 3.5;
+  ctx.beginPath(); ctx.moveTo(-30, 11); ctx.lineTo(24, 5); ctx.stroke();
+  ctx.strokeStyle = "#c69a52"; ctx.lineWidth = 2;
+  for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.moveTo(-28, 11); ctx.lineTo(-46, 5 + i * 3.5); ctx.stroke(); }
+  // legs
+  ctx.strokeStyle = "#1a1a1a"; ctx.lineWidth = 4;
+  ctx.beginPath(); ctx.moveTo(-1, 4); ctx.lineTo(-7, 13); ctx.moveTo(3, 4); ctx.lineTo(9, 12); ctx.stroke();
+  // robe
+  ctx.fillStyle = "#1a1a1a";
+  ctx.beginPath(); ctx.roundRect(-8, -13, 16, 19, 5); ctx.fill();
+  // arms reaching forward to the broom
+  ctx.strokeStyle = "#1a1a1a"; ctx.lineWidth = 4;
+  ctx.beginPath(); ctx.moveTo(4, -8); ctx.lineTo(16, 3); ctx.stroke();
+  ctx.fillStyle = "#f2c9a0"; ctx.beginPath(); ctx.arc(16, 3, 2.5, 0, 7); ctx.fill();
+  // head
+  ctx.fillStyle = "#f2c9a0"; ctx.beginPath(); ctx.arc(0, -21, 9, 0, 7); ctx.fill();
+  // messy dark hair
+  ctx.fillStyle = "#1b1410";
+  ctx.beginPath(); ctx.arc(0, -24, 9.5, Math.PI * 0.95, Math.PI * 2.05); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(-9, -25); ctx.lineTo(-12, -32); ctx.lineTo(-5, -29); ctx.lineTo(-3, -35); ctx.lineTo(2, -29); ctx.lineTo(6, -34); ctx.lineTo(8, -27); ctx.lineTo(10, -31); ctx.lineTo(9, -24); ctx.closePath(); ctx.fill();
+  // lightning scar
+  ctx.strokeStyle = "#e3b23c"; ctx.lineWidth = 1.4;
+  ctx.beginPath(); ctx.moveTo(-5, -28); ctx.lineTo(-3.5, -26); ctx.lineTo(-5, -24.5); ctx.lineTo(-3.5, -22.5); ctx.stroke();
+  // round glasses
+  ctx.strokeStyle = "#111"; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.arc(-3.5, -20, 3.2, 0, 7); ctx.stroke();
+  ctx.beginPath(); ctx.arc(3.5, -20, 3.2, 0, 7); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(-0.3, -20); ctx.lineTo(0.3, -20); ctx.stroke();
+  ctx.fillStyle = "#1c2a33"; ctx.beginPath(); ctx.arc(-3.5, -20, 1.1, 0, 7); ctx.arc(3.5, -20, 1.1, 0, 7); ctx.fill();
+  // little grin
+  ctx.strokeStyle = "#1c2a33"; ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.arc(0, -16.5, 2.5, 0.2 * Math.PI, 0.8 * Math.PI); ctx.stroke();
+  ctx.restore();
 }
 function drawDanger() {
   const j = G.jake;
