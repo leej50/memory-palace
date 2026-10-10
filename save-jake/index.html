@@ -568,13 +568,13 @@ const MARCWOOD_LYRICS = [
   "SEXY AND I KNOW IT", "YOUNG WILD AND FREEEE", "BABY BABY BABY OHHH", "TIK TOK ON THE CLOCK",
   "DYNAMITEEEE 🧨", "TONIGHT'S GONNA BE A GOOD NIGHT", "ROLLING IN THE DEEEEP", "WE FOUND LOOOVE", "SOMEBODY THAT I USED TO KNOWWW",
 ];
-const SARAH_START = ["JAKE?? JAKE!!!", "OH MY GOD", "HOLD ON I'M COMING!!"];
-const SARAH_THROW = ["GO GO GO", "pleeeease 🙏", "CATCH IT", "this one. THIS ONE.", "ahhhhh"];
-const SARAH_HIT = ["YESSS 😭", "I GOT HIM!!", "SWIM SWIM SWIM", "LET'S GOOO", "ok ok come here!!"];
-const SARAH_MISS = ["NOOO", "ugh!!", "SO CLOSE", "he keeps MOVING", "JAKE STAY STILL", "ok ok ok again", "why is this so hard 😭"];
-const SARAH_PUSH = ["TING WHAT THE HELL", "TING. TING. TING.", "are you SERIOUS right now", "I JUST SAVED HIM", "TING I SWEAR"];
-const SARAH_EATEN = ["JAKE NOOOO 😭", "NOT LIKE THIS", "SPIT HIM OUT", "oh my god oh my god", "JAKE!!!"];
-const SARAH_IDLE = ["ok ok i got this", "hold on hold on", "i'm coming jake!!", "don't look at the sharks", "focus. FOCUS.", "ting do something!!"];
+const SARAH_START = ["JAKE?? JAKE!!!", "OH MY GOD 🌚", "HOLD ON I'M COMING!!", "not today 🌚"];
+const SARAH_THROW = ["GO GO GO", "pleeeease 🙏", "CATCH IT", "this one. THIS ONE. 🌚", "ahhhhh", "watch this 🌚"];
+const SARAH_HIT = ["YESSS 😭", "I GOT HIM!!", "SWIM SWIM SWIM", "LET'S GOOO 🌚", "ok ok come here!!", "told you 🌚"];
+const SARAH_MISS = ["NOOO", "ugh!! 🌚", "SO CLOSE", "he keeps MOVING", "JAKE STAY STILL", "ok ok ok again", "why is this so hard 😭", "that was on purpose 🌚", "🌚🌚🌚"];
+const SARAH_PUSH = ["TING WHAT THE HELL", "TING. TING. TING. 🌚", "are you SERIOUS right now", "I JUST SAVED HIM 🌚", "TING I SWEAR"];
+const SARAH_EATEN = ["JAKE NOOOO 😭", "NOT LIKE THIS", "SPIT HIM OUT", "oh my god oh my god", "JAKE!!!", "well 🌚"];
+const SARAH_IDLE = ["ok ok i got this", "hold on hold on", "i'm coming jake!!", "don't look at the sharks", "focus. FOCUS.", "ting do something!!", "🌚", "he looks so dumb rn 🌚", "ting is enjoying this 🌚"];
 
 function say(text, dur = 2.2) { G.bubble = { text, until: G.t + dur }; }
 function tingSay(text, dur = 2.4) { G.tingBubble = { text, until: G.t + dur }; }
@@ -672,7 +672,7 @@ function landTube() {
   if (!offWater) SFX.splash();
   G.tube = null;
   if (offWater) { sarahSay("THAT'S THE DOCK 😭", 2); hint.textContent = "That one landed on the dock. Aim for the water."; return; }
-  if (shark) { G.stolen++; shark.r = SHARK_FAR; say("you threw it to the SHARK", 2); tingSay("lol", 1.6); sarahSay("NOT YOU 🦈", 2); hint.textContent = "The shark took it and swam off with it. At least it's further away now."; return; }
+  if (shark) { G.stolen++; shark.r = SHARK_FAR; say("you threw it to the SHARK", 2); tingSay("lol", 1.6); sarahSay("NOT YOU 🦈🌚", 2); hint.textContent = "The shark took it and swam off with it. At least it's further away now."; return; }
   sarahSay(pick(SARAH_MISS), 2);
   say(pick(["missed!!", "that's not me", "closer!!", "other way!!", "lead me a bit!!"]), 1.6);
   hint.textContent = "Missed. He drifts, so aim a little ahead of him.";
@@ -728,7 +728,7 @@ function update(dt) {
         setPhase("win");
         say(JAKE_PUSHED[JAKE_PUSHED.length - 1], 4);
         tingSay("...fine", 3);
-        sarahSay("WE DID IT 😭🎉", 4);
+        sarahSay("WE DID IT 😭🎉🌚", 4);
         hint.textContent = "Five. Ting gives up. Jake is on dry land.";
         SFX.win();
         burst();
@@ -845,7 +845,7 @@ function drawHarry() {
   if (p > 0.28 && !h.reacted) {
     h.reacted = true;
     say("was that harry potter??", 3);
-    sarahSay("CIARANN??", 3.5);
+    sarahSay("CIARANN?? 🌚", 3.5);
     tingSay("nice broom", 3);
   }
   const x = -80 + (W + 160) * p;
@@ -903,7 +903,7 @@ function drawBoat() {
   if (p > 0.2 && !b.reacted) {
     b.reacted = true;
     say("is that marcwood", 3);
-    sarahSay("MARCWOOD?? 🎤", 3.5);
+    sarahSay("MARCWOOD?? 🎤🌚", 3.5);
     tingSay("turn it UP", 3);
   }
   if (G.t > b.nextLyric) {
