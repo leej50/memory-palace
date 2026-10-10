@@ -384,7 +384,7 @@
   <section id="intro" class="screen">
     <p class="eyebrow">Urgent. Sort of.</p>
     <h1>Sarah. Jake is in the water.</h1>
-    <p>Ting pushed him in. There are sharks, and they are slowly closing in. He swims about as well as a shopping cart. You and Ting are the only two people on the dock, and Ting is not going to help.</p>
+    <p>Ting pushed him in. There are sharks, and they are closing in. You and Ting are the only two people on the dock, and Ting is not going to help.</p>
     <p>Get him out and you can have your birthday present. He needs to make it onto the dock ten times. You'll see why.</p>
     <button class="big" id="startBtn">Fine, I'll save him</button>
   </section>
@@ -573,7 +573,7 @@ function updateHud() {
 }
 
 const SHARK_FAR = 165, EAT_RADIUS = 26;
-const closeRate = () => 7 + G.saves * 0.7;   // px per second; level 1 gives ~23s, level 10 ~12s
+const closeRate = () => 10.5 + G.saves * 0.9;   // px per second; level 1 gives ~16s, level 10 ~9s
 function resetSharks() {
   G.sharks = [0, 1, 2].map((i) => ({ a: (i / 3) * Math.PI * 2 + Math.random(), r: SHARK_FAR + i * 10, speed: 0.5 + i * 0.15, dir: i % 2 ? -1 : 1 }));
 }
@@ -668,8 +668,8 @@ function update(dt) {
 
   if (G.phase === "aim") {
     j.onDock = false;
-    j.drift += dt * 0.55;
-    const reach = Math.min(W * 0.26, 110);
+    j.drift += dt * 0.9;
+    const reach = Math.min(W * 0.3, 130);
     const tx = L.jakeHomeX + Math.sin(j.drift) * reach + Math.sin(j.drift * 2.3) * reach * 0.25;
     const ty = L.jakeHomeY + Math.sin(j.drift * 1.7) * Math.min(H * 0.08, 30) + Math.sin(G.t * 2) * 4;
     j.x += (tx - j.x) * Math.min(1, dt * 3);
@@ -694,7 +694,7 @@ function update(dt) {
       setPhase("aim");
     }
   } else if (G.phase === "swim") {
-    const p = Math.min(1, G.phaseT / 1.6);
+    const p = Math.min(1, G.phaseT / 1.1);
     if (j.sx === undefined) { j.sx = j.x; j.sy = j.y; }
     j.x = lerp(j.sx, L.climbX, ease(p));
     j.y = lerp(j.sy, pierTop() - 4, ease(p)) + Math.sin(G.t * 6) * 2;
