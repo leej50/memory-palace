@@ -530,6 +530,7 @@ const G = {
   saves: 0, throws: 0, stolen: 0, eatenCount: 0,
   chomp: null, eater: null,
   hp: null, hpDone: false,
+  boat: null, boatDone: false,
   jake: { x: 0, y: 0, drift: 0, onDock: false, under: false },
   sharks: [],
   tube: null,          // { x0,y0,x1,y1,start,dur }
@@ -561,6 +562,7 @@ const JAKE_PUSHED = [
 const TING_PUSH = ["oops", "sorry bao bei", "baby shark dududu", "reflex", "sorry bao bei", "...fine"];
 const TING_IDLE = ["he'll be fine", "he's dramatic", "want a snack?", "nice throw", "lol", "i'll get a towel", "sorry bao bei", "baby shark dududu", "baby shark dududu"];
 const TING_EATEN = ["oh no", "lol", "rip", "he's fine probably", "sorry bao bei", "baby shark dududu 🦈"];
+const MARCWOOD_LYRICS = ["🎤 MR BRIGHTSIDE!!!", "HEY YAAAAA", "I WANT IT THAT WAYYYY", "SINCE U BEEN GOOONE", "ALL STAAAR!!!", "YEAHHHH 🔥", "TEMPERATUREEEE", "CRAZY IN LOOOVE", "DUDE!!!!", "HOLLABACK GIRRRL", "DROP IT LIKE IT'S HOT"];
 const SARAH_START = ["JAKE?? JAKE!!!", "OH MY GOD", "HOLD ON I'M COMING!!"];
 const SARAH_THROW = ["GO GO GO", "pleeeease 🙏", "CATCH IT", "this one. THIS ONE.", "ahhhhh"];
 const SARAH_HIT = ["YESSS 😭", "I GOT HIM!!", "SWIM SWIM SWIM", "LET'S GOOO", "ok ok come here!!"];
@@ -753,6 +755,11 @@ function update(dt) {
         say(JAKE_PUSHED[Math.min(G.saves - 1, JAKE_PUSHED.length - 2)], 2.4);
         sarahSay(SARAH_PUSH[Math.min(G.saves - 1, SARAH_PUSH.length - 1)], 2.8);
         hint.textContent = `${CONFIG.pusher} pushed him back in. ${CONFIG.savesToWin - G.saves} to go.`;
+        if (G.saves === 1 && !G.boatDone) {
+          G.boatDone = true;
+          G.boat = { start: G.t + 0.8, reacted: false, i: 0, nextLyric: 0, bubble: { text: "", until: 0 }, x: -999, y: 0 };
+          hint.textContent = `${CONFIG.pusher} pushed him back in. ${CONFIG.savesToWin - G.saves} to go. Also: who is that.`;
+        }
         if (G.saves === 3 && !G.hpDone) {
           G.hpDone = true;
           G.hp = { start: G.t + 0.9, reacted: false };
@@ -795,6 +802,7 @@ function draw() {
     ctx.stroke();
   }
   drawHarry();
+  drawBoat();
   for (const s of G.sharks) drawShark(s, true);
   if (G.phase === "aim") drawDanger();
   if (!G.jake.onDock && !G.jake.under) drawJakeWater();
@@ -821,6 +829,7 @@ function draw() {
   if (G.tube) drawTube();
   if (!G.jake.under) drawBubble(G.bubble, G.jake.x, G.jake.y - (G.jake.onDock ? 70 : 44));
   drawBubble(G.tingBubble, L.tingX, pierTop() - 78);
+  if (G.boat) drawBubble(G.boat.bubble, G.boat.x, G.boat.y - 66);
   drawBubble(G.sarahBubble, L.sarahX, pierTop() - 78);
 }
 function drawHarry() {
@@ -880,6 +889,66 @@ function drawHarry() {
   ctx.strokeStyle = "#1c2a33"; ctx.lineWidth = 1.2;
   ctx.beginPath(); ctx.arc(0, -16.5, 2.5, 0.2 * Math.PI, 0.8 * Math.PI); ctx.stroke();
   ctx.restore();
+}
+function drawBoat() {
+  const b = G.boat; if (!b) return;
+  const p = (G.t - b.start) / 12;
+  if (p < 0) return;
+  if (p > 1) { G.boat = null; return; }
+  if (p > 0.2 && !b.reacted) {
+    b.reacted = true;
+    say("is that marcwood", 3);
+    sarahSay("MARCWOOD?? 🎤", 3.5);
+    tingSay("turn it UP", 3);
+  }
+  if (G.t > b.nextLyric) {
+    b.bubble = { text: MARCWOOD_LYRICS[b.i++ % MARCWOOD_LYRICS.length], until: G.t + 1.3 };
+    b.nextLyric = G.t + 1.5;
+  }
+  const x = W + 90 - (W + 180) * p;
+  const y = L.horizon + 36 + Math.sin(G.t * 2.2) * 2;
+  b.x = x; b.y = y;
+  const rock = Math.sin(G.t * 2.2) * 0.05;
+  // wake behind the boat
+  ctx.strokeStyle = "rgba(255,255,255,.55)"; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(x + 34, y + 6); ctx.lineTo(x + 95, y + 1); ctx.moveTo(x + 34, y + 9); ctx.lineTo(x + 86, y + 16); ctx.stroke();
+  ctx.save(); ctx.translate(x, y); ctx.rotate(rock);
+  ctx.lineCap = "round";
+  // hull
+  ctx.fillStyle = "#6b3e1e";
+  ctx.beginPath(); ctx.moveTo(-42, 0); ctx.lineTo(42, 0); ctx.lineTo(32, 13); ctx.lineTo(-32, 13); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = "#f4f1ea"; ctx.fillRect(-40, 0, 80, 3);
+  ctx.fillStyle = "#2d3436"; ctx.fillRect(36, -9, 8, 13);
+  // marcwood: legs
+  ctx.strokeStyle = "#2d3436"; ctx.lineWidth = 5;
+  ctx.beginPath(); ctx.moveTo(-5, -4); ctx.lineTo(-7, 2); ctx.moveTo(5, -4); ctx.lineTo(7, 2); ctx.stroke();
+  // body
+  ctx.fillStyle = "#ff8c42"; ctx.beginPath(); ctx.roundRect(-10, -34, 20, 32, 6); ctx.fill();
+  // arms up and waving
+  const w = Math.sin(G.t * 10) * 6;
+  ctx.strokeStyle = "#f2c9a0"; ctx.lineWidth = 5;
+  ctx.beginPath(); ctx.moveTo(-9, -28); ctx.lineTo(-22, -47 - w); ctx.moveTo(9, -28); ctx.lineTo(20, -45 + w); ctx.stroke();
+  // mic
+  ctx.fillStyle = "#2d3436"; ctx.beginPath(); ctx.arc(21, -47 + w, 3.5, 0, 7); ctx.fill();
+  // head, backwards cap
+  ctx.fillStyle = "#f2c9a0"; ctx.beginPath(); ctx.arc(0, -44, 10, 0, 7); ctx.fill();
+  ctx.fillStyle = "#1e3a8a"; ctx.beginPath(); ctx.arc(0, -47, 10.5, Math.PI, Math.PI * 2); ctx.fill(); ctx.fillRect(4, -49, 12, 4);
+  // eyes squeezed shut, mouth wide open
+  ctx.strokeStyle = "#1c2a33"; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.arc(-3.5, -44, 2, Math.PI, 0); ctx.stroke();
+  ctx.beginPath(); ctx.arc(3.5, -44, 2, Math.PI, 0); ctx.stroke();
+  ctx.fillStyle = "#7a2a2a";
+  ctx.beginPath(); ctx.ellipse(0, -38.5, 3.5, 4 + Math.abs(Math.sin(G.t * 12)) * 2, 0, 0, 7); ctx.fill();
+  ctx.restore();
+  // music notes drifting up
+  ctx.font = "16px Nunito, sans-serif"; ctx.textAlign = "center";
+  for (let i = 0; i < 4; i++) {
+    const ph = (G.t * 0.7 + i * 0.25) % 1;
+    ctx.fillStyle = `rgba(28,42,51,${1 - ph})`;
+    ctx.fillText(i % 2 ? "♪" : "♫", x - 26 + i * 18 + Math.sin(G.t * 3 + i) * 4, y - 52 - ph * 36);
+  }
+  ctx.font = "700 10px Fredoka, sans-serif"; ctx.fillStyle = "#fff4e1";
+  ctx.fillText("MARCWOOD", x, y + 26);
 }
 function drawDanger() {
   const j = G.jake;
