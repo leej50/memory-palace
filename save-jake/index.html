@@ -1,0 +1,837 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>[hidden]{display:none!important}img{max-width:100%}</style></head><body><title>Save Jake</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:ital,wght@0,400;0,600;0,800;1,400&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  /* Layout: one centered column; the ocean stage fills the width, controls sit under it like a boardwalk. */
+  :root {
+    --sky: #ffe9c2;
+    --sky-deep: #ffc98a;
+    --sea: #1e9ab0;
+    --sea-deep: #0d5f7a;
+    --sand: #fff4e1;
+    --wood: #b5733b;
+    --ink: #1c2a33;
+    --ink-soft: #4a5b66;
+    --coral: #ff5d5d;
+    --coral-deep: #d63c3c;
+    --paper: #fffdf6;
+    --paper-line: #e8dfca;
+    --ribbon: #ffd166;
+    --display: "Fredoka", "Trebuchet MS", "Arial Rounded MT Bold", sans-serif;
+    --body: "Nunito", "Segoe UI", system-ui, sans-serif;
+    --hand: "Caveat", "Comic Sans MS", cursive;
+    color-scheme: light;
+  }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: linear-gradient(180deg, var(--sky) 0%, var(--sky-deep) 45%, var(--sea) 46%, var(--sea-deep) 100%) fixed;
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 17px;
+    line-height: 1.5;
+  }
+  * { box-sizing: border-box; }
+  button { font: inherit; cursor: pointer; }
+  #app {
+    max-width: 680px;
+    margin: 0 auto;
+    padding-inline: 16px;
+    padding-block: 24px 40px;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .screen {
+    background: var(--sand);
+    border-radius: 28px;
+    padding: 28px 24px;
+    box-shadow: 0 18px 50px rgba(13, 60, 80, .35), 0 2px 0 rgba(255,255,255,.6) inset;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .eyebrow {
+    font-family: var(--display);
+    text-transform: uppercase;
+    letter-spacing: .14em;
+    font-size: 13px;
+    color: var(--coral-deep);
+    margin: 0;
+  }
+  h1, h2 {
+    font-family: var(--display);
+    font-weight: 700;
+    line-height: 1.05;
+    margin: 0;
+    text-wrap: balance;
+    color: var(--ink);
+  }
+  h1 { font-size: clamp(38px, 9vw, 60px); }
+  h2 { font-size: clamp(28px, 6vw, 40px); }
+  p { margin: 0; max-width: 60ch; color: var(--ink-soft); }
+  .big {
+    font-family: var(--display);
+    font-size: 22px;
+    font-weight: 600;
+    border: 0;
+    border-radius: 999px;
+    padding: 16px 30px;
+    background: var(--coral);
+    color: #fff;
+    box-shadow: 0 6px 0 var(--coral-deep);
+    transition: transform .08s, box-shadow .08s;
+    align-self: flex-start;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+  .big:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--coral-deep); }
+  .big:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+  .quiet {
+    background: transparent;
+    border: 2px solid var(--ink-soft);
+    color: var(--ink);
+    border-radius: 999px;
+    padding: 10px 18px;
+    font-weight: 700;
+    align-self: flex-start;
+  }
+  .quiet:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+
+  /* Stage */
+  .stage {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    aspect-ratio: 4 / 3;
+    border-radius: 20px;
+    overflow: hidden;
+    background: var(--sea);
+    box-shadow: 0 0 0 4px var(--wood);
+    touch-action: none;
+  }
+  @media (max-width: 520px) { .stage { aspect-ratio: 3 / 4; } }
+  canvas#c { width: 100%; height: 100%; display: block; }
+  .hud {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .hud-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .hud-label {
+    font-family: var(--display);
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .hud-value {
+    font-family: var(--display);
+    font-size: 18px;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+  }
+  .meter {
+    height: 14px;
+    border-radius: 999px;
+    background: #e3d5bd;
+    overflow: hidden;
+    position: relative;
+  }
+  .meter > div {
+    height: 100%;
+    width: 0%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--sea), #52d6c3);
+    transition: width .12s linear;
+  }
+  .controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    text-align: center;
+  }
+  #hint { font-weight: 600; color: var(--ink); min-height: 1.5em; }
+
+  /* Saved */
+  .hearts {
+    font-size: 40px;
+    letter-spacing: .1em;
+    animation: bob 1.6s ease-in-out infinite;
+  }
+  @keyframes bob { 50% { transform: translateY(-6px); } }
+
+  /* Gift */
+  .gift-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding-block: 10px;
+  }
+  .box {
+    position: relative;
+    width: 200px;
+    height: 170px;
+    cursor: pointer;
+    border: 0;
+    background: transparent;
+    padding: 0;
+    margin-top: 40px;
+    animation: wiggle 2.4s ease-in-out infinite;
+  }
+  .box:focus-visible { outline: 3px solid var(--ink); outline-offset: 8px; border-radius: 12px; }
+  @keyframes wiggle {
+    0%, 70%, 100% { transform: rotate(0); }
+    75% { transform: rotate(-3deg); }
+    80% { transform: rotate(3deg); }
+    85% { transform: rotate(-2deg); }
+    90% { transform: rotate(2deg); }
+  }
+  .box.open { animation: none; cursor: default; }
+  .box-body {
+    position: absolute;
+    left: 10px; right: 10px; bottom: 0;
+    height: 120px;
+    background: var(--coral);
+    border-radius: 6px 6px 14px 14px;
+    box-shadow: inset 0 -14px 0 var(--coral-deep);
+  }
+  .box-body::after {
+    content: "";
+    position: absolute;
+    left: 50%; top: 0; bottom: 0;
+    width: 34px;
+    transform: translateX(-50%);
+    background: var(--ribbon);
+  }
+  .box-lid {
+    position: absolute;
+    left: 0; right: 0; top: 40px;
+    height: 38px;
+    background: var(--coral);
+    border-radius: 8px;
+    box-shadow: 0 6px 0 var(--coral-deep);
+    transition: transform .7s cubic-bezier(.3,1.4,.5,1), opacity .6s;
+    transform-origin: 10% 100%;
+  }
+  .box-lid::after {
+    content: "";
+    position: absolute;
+    left: 50%; top: 0; bottom: 0;
+    width: 34px;
+    transform: translateX(-50%);
+    background: var(--ribbon);
+  }
+  .bow {
+    position: absolute;
+    left: 50%; top: 6px;
+    transform: translateX(-50%);
+    width: 70px; height: 40px;
+    transition: transform .7s cubic-bezier(.3,1.4,.5,1), opacity .6s;
+  }
+  .bow::before, .bow::after {
+    content: "";
+    position: absolute;
+    top: 6px;
+    width: 30px; height: 28px;
+    border: 7px solid var(--ribbon);
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  }
+  .bow::before { left: 0; transform: rotate(-20deg); }
+  .bow::after { right: 0; transform: rotate(20deg); }
+  .box.open .box-lid { transform: translate(-30px, -140px) rotate(-35deg); opacity: 0; }
+  .box.open .bow { transform: translate(-50%, -170px) rotate(25deg); opacity: 0; }
+  .box.open .box-body { animation: pop .5s ease-out; }
+  @keyframes pop { 30% { transform: scaleX(1.06) scaleY(.94); } 60% { transform: scaleX(.97) scaleY(1.04); } }
+
+  .letter {
+    width: 100%;
+    background: var(--paper);
+    background-image: repeating-linear-gradient(transparent 0 31px, var(--paper-line) 31px 32px);
+    background-position: 0 14px;
+    border-radius: 6px;
+    padding: 26px 26px 30px;
+    box-shadow: 0 14px 40px rgba(13,60,80,.25);
+    font-family: var(--hand);
+    font-size: 23px;
+    line-height: 32px;
+    color: var(--ink);
+    transform: translateY(40px);
+    opacity: 0;
+    transition: transform .9s .35s cubic-bezier(.2,.9,.3,1), opacity .9s .35s;
+    rotate: -0.6deg;
+  }
+  .letter.in { transform: none; opacity: 1; }
+  .letter p { color: var(--ink); max-width: none; margin: 0 0 32px; font-family: inherit; }
+  .letter p:last-child { margin: 0; }
+  .letter .sig { font-size: 30px; font-weight: 600; }
+  .letter .ps { font-size: 19px; color: var(--ink-soft); }
+
+  #confetti {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .box, .hearts { animation: none; }
+    .letter, .box-lid, .bow { transition-duration: .01s; }
+  }
+</style>
+
+<main id="app">
+  <section id="intro" class="screen">
+    <p class="eyebrow">Urgent. Sort of.</p>
+    <h1>Sarah. Jake is in the water.</h1>
+    <p>Ting pushed him in. There are sharks. He swims about as well as a shopping cart. You and Ting are the only two people on the dock, and Ting is not going to help.</p>
+    <p>Get him out and you can have your birthday present. He needs to make it onto the dock ten times. You'll see why.</p>
+    <button class="big" id="startBtn">Fine, I'll save him</button>
+  </section>
+
+  <section id="game" class="screen" hidden>
+    <div class="hud">
+      <div class="hud-row">
+        <span class="hud-label" id="hudLabel">Rescued</span>
+        <span class="hud-value" id="hudValue">0 / 10</span>
+      </div>
+      <div class="meter"><div id="meterFill"></div></div>
+    </div>
+    <div class="stage"><canvas id="c"></canvas></div>
+    <div class="controls">
+      <p id="hint">Press and drag back anywhere, like a slingshot. Let go to launch the tube at Jake.</p>
+    </div>
+  </section>
+
+  <section id="saved" class="screen" hidden>
+    <div class="hearts">🛟 🦈 💛</div>
+    <p class="eyebrow">Rescue complete</p>
+    <h2>Ten rescues. Ting has finally given up.</h2>
+    <p id="savedStats">Jake is soaked, slightly chewed, and extremely grateful. He says he had a present ready the whole time, which raises questions about why he was standing so close to Ting.</p>
+    <button class="big" id="toGiftBtn">Okay, what is it</button>
+  </section>
+
+  <section id="gift" class="screen" hidden>
+    <p class="eyebrow">For you</p>
+    <h2>A slightly damp birthday present.</h2>
+    <div class="gift-wrap">
+      <button class="box" id="box" aria-label="Open the present">
+        <div class="box-body"></div>
+        <div class="box-lid"></div>
+        <div class="bow"></div>
+      </button>
+      <p id="boxHint">Tap the box to open it.</p>
+      <article class="letter" id="letter" hidden></article>
+    </div>
+  </section>
+</main>
+<canvas id="confetti" hidden></canvas>
+
+<script>
+/* ============ EDIT THESE ============ */
+const CONFIG = {
+  friend: "Sarah",
+  from: "Jake",
+  pusher: "Ting",
+  savesToWin: 10,
+  letter: [
+    "Happy birthday!!",
+    "First of all: thank you for saving me. Ten times. {pusher} just stood there pushing me back in, which I think tells you everything about who your real friends are.",
+    "Second: I wanted to make you something instead of just sending a text, because a text felt too small for how glad I am that you exist. You make everything louder and funnier and a little more chaotic, and my life is better for it.",
+    "I hope this year is kind to you. I hope you get the things you've been quietly wanting and a few things you didn't think to ask for. I hope you laugh so hard it hurts at least once a week. And I hope you let people spoil you today, because you spend most of the year looking after everyone else.",
+    "Thank you for being my friend. Thank you for the rescue(s). Please don't tell {pusher} I cried a little.",
+  ],
+  ps: "P.S. We are not inviting {pusher} to the dock again.",
+};
+/* ==================================== */
+
+const $ = (id) => document.getElementById(id);
+const fill = (s) => s.replace(/\{pusher\}/g, CONFIG.pusher).replace(/\{from\}/g, CONFIG.from).replace(/\{friend\}/g, CONFIG.friend);
+const show = (id) => {
+  for (const s of document.querySelectorAll(".screen")) s.hidden = s.id !== id;
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
+const lerp = (a, b, t) => a + (b - a) * t;
+const ease = (t) => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+/* ---------- Game ---------- */
+const stage = document.querySelector(".stage");
+const canvas = $("c");
+const ctx = canvas.getContext("2d");
+const hudValue = $("hudValue"), meterFill = $("meterFill"), hint = $("hint");
+
+let W = 400, H = 300, dpr = 1;
+function resize() {
+  const r = stage.getBoundingClientRect();
+  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  W = Math.max(200, r.width); H = Math.max(200, r.height);
+  canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  layout();
+}
+new ResizeObserver(resize).observe(stage);
+
+const G = {
+  phase: "idle",      // aim | swim | climb | push | win
+  phaseT: 0,
+  t: 0, last: 0,
+  saves: 0, throws: 0, stolen: 0,
+  jake: { x: 0, y: 0, drift: 0, onDock: false },
+  sharks: [],
+  tube: null,          // { x0,y0,x1,y1,start,dur }
+  drag: null,          // { sx, sy, cx, cy }
+  bubble: { text: "", until: 0 },
+  tingBubble: { text: "", until: 0 },
+  sarahBubble: { text: "", until: 0 },
+  splashes: [],
+  tingSwing: 0,
+  nextChatter: 4,
+  raf: 0,
+};
+const L = { pierH: 0, horizon: 0, sarahX: 0, tingX: 0, jakeHomeX: 0, jakeHomeY: 0, climbX: 0 };
+function layout() {
+  L.pierH = Math.max(56, H * 0.17);
+  L.horizon = H * 0.24;
+  L.sarahX = W * 0.3;
+  L.tingX = W * 0.74;
+  L.climbX = W * 0.56;
+  L.jakeHomeX = W * 0.52;
+  L.jakeHomeY = H * 0.46;
+}
+const pierTop = () => H - L.pierH;
+
+const JAKE_PANIC = ["HELP", "there are SHARKS", "i can't swim good", "it's cold", "is that a fin", "sarah pls", "throw the tube!!", "it's circling", "tell my mom i love her", "i felt something touch my leg"];
+const JAKE_PUSHED = [
+  "TING.", "again??", "why", "i'm starting to think this is on purpose", "halfway. i think.",
+  "my shoes are gone", "sarah i believe in you", "ting i will remember this", "one more. please.", "I'M OUT. I'M OUT.",
+];
+const TING_PUSH = ["oops", "slipped", "my bad", "he's heavy", "lol", "reflex", "the wind did it", "sorry sarah", "ok last one", "...fine"];
+const TING_IDLE = ["he'll be fine", "he's dramatic", "want a snack?", "nice throw", "lol", "i'll get a towel"];
+const SARAH_MISS = ["missed", "ugh", "closer", "hang on", "he keeps MOVING"];
+
+function say(text, dur = 2.2) { G.bubble = { text, until: G.t + dur }; }
+function tingSay(text, dur = 2.4) { G.tingBubble = { text, until: G.t + dur }; }
+function sarahSay(text, dur = 1.6) { G.sarahBubble = { text, until: G.t + dur }; }
+function setPhase(p) { G.phase = p; G.phaseT = 0; }
+function updateHud() {
+  hudValue.textContent = `${G.saves} / ${CONFIG.savesToWin}`;
+  meterFill.style.width = (G.saves / CONFIG.savesToWin * 100) + "%";
+}
+
+function startGame() {
+  G.t = 0; G.saves = 0; G.throws = 0; G.stolen = 0;
+  G.tube = null; G.drag = null;
+  G.jake.x = L.jakeHomeX; G.jake.y = L.jakeHomeY; G.jake.onDock = false; G.jake.drift = 0;
+  G.sharks = [0, 1, 2].map((i) => ({ a: (i / 3) * Math.PI * 2, r: 95 + i * 12, speed: 0.5 + i * 0.15, dir: i % 2 ? -1 : 1 }));
+  updateHud();
+  setPhase("aim");
+  say("HELP", 2.5); tingSay("whoops", 3);
+  hint.textContent = "Press and drag back anywhere, like a slingshot. Let go to launch the tube at Jake.";
+}
+
+/* Aiming: pull back from the press point; the tube goes the opposite way. */
+const sarahPos = () => ({ x: L.sarahX, y: pierTop() - 30 });
+function aimVector(d) {
+  const dx = d.sx - d.cx, dy = d.sy - d.cy;
+  const len = Math.hypot(dx, dy);
+  if (len < 12) return null;
+  const power = Math.min(len, 170);
+  const s = sarahPos();
+  const nx = dx / len, ny = dy / len;
+  const range = power * (Math.max(W, H) / 170) * 0.95;
+  return { x1: s.x + nx * range, y1: s.y + ny * range, power, nx, ny };
+}
+canvas.addEventListener("pointerdown", (e) => {
+  if (G.phase !== "aim" || G.tube) return;
+  const r = canvas.getBoundingClientRect();
+  G.drag = { sx: e.clientX - r.left, sy: e.clientY - r.top, cx: e.clientX - r.left, cy: e.clientY - r.top };
+  canvas.setPointerCapture(e.pointerId);
+});
+canvas.addEventListener("pointermove", (e) => {
+  if (!G.drag) return;
+  const r = canvas.getBoundingClientRect();
+  G.drag.cx = e.clientX - r.left; G.drag.cy = e.clientY - r.top;
+});
+function release(e) {
+  if (!G.drag) return;
+  const v = aimVector(G.drag);
+  G.drag = null;
+  if (!v || G.phase !== "aim") return;
+  const s = sarahPos();
+  G.throws++;
+  const dist = Math.hypot(v.x1 - s.x, v.y1 - s.y);
+  G.tube = { x0: s.x, y0: s.y, x1: v.x1, y1: v.y1, start: G.t, dur: 0.45 + dist / 900, spin: Math.random() * 6 };
+  say(pick(["please", "yes!!", "here??", "ahh", "to ME"]), 1);
+}
+canvas.addEventListener("pointerup", release);
+canvas.addEventListener("pointercancel", release);
+
+function landTube() {
+  const T = G.tube, j = G.jake;
+  const offWater = T.y1 < L.horizon - 10 || T.y1 > pierTop();
+  const hitJake = !offWater && Math.hypot(T.x1 - j.x, T.y1 - j.y) < 46;
+  if (hitJake) {
+    G.tube = null;
+    setPhase("swim");
+    say(pick(["got it!!", "YES", "ok ok ok", "swimming!!"]), 1.6);
+    hint.textContent = "He's got it. Here he comes.";
+    return;
+  }
+  const shark = G.sharks.find((s) => Math.hypot(T.x1 - sharkX(s), T.y1 - sharkY(s)) < 34);
+  G.splashes.push({ x: T.x1, y: T.y1, t: 0 });
+  G.tube = null;
+  if (offWater) { sarahSay("that's the dock"); hint.textContent = "That one landed on the dock. Aim for the water."; return; }
+  if (shark) { G.stolen++; say("you threw it to the SHARK", 2); tingSay("lol", 1.6); hint.textContent = "The shark has it now. Try again."; return; }
+  sarahSay(pick(SARAH_MISS));
+  say(pick(["missed!!", "that's not me", "closer!!", "other way!!", "lead me a bit!!"]), 1.6);
+  hint.textContent = "Missed. He drifts, so aim a little ahead of him.";
+}
+
+function update(dt) {
+  G.t += dt; G.phaseT += dt;
+  const j = G.jake;
+
+  if (G.phase === "aim") {
+    j.onDock = false;
+    j.drift += dt * 0.55;
+    const reach = Math.min(W * 0.26, 110);
+    const tx = L.jakeHomeX + Math.sin(j.drift) * reach + Math.sin(j.drift * 2.3) * reach * 0.25;
+    const ty = L.jakeHomeY + Math.sin(j.drift * 1.7) * Math.min(H * 0.08, 30) + Math.sin(G.t * 2) * 4;
+    j.x += (tx - j.x) * Math.min(1, dt * 3);
+    j.y += (ty - j.y) * Math.min(1, dt * 3);
+    if (G.tube && (G.t - G.tube.start) / G.tube.dur >= 1) landTube();
+    if (G.t > G.nextChatter) {
+      G.nextChatter = G.t + 3.5 + Math.random() * 3;
+      if (G.t > G.bubble.until) say(pick(JAKE_PANIC), 1.8);
+      else tingSay(pick(TING_IDLE), 1.8);
+    }
+  } else if (G.phase === "swim") {
+    const p = Math.min(1, G.phaseT / 1.6);
+    if (j.sx === undefined) { j.sx = j.x; j.sy = j.y; }
+    j.x = lerp(j.sx, L.climbX, ease(p));
+    j.y = lerp(j.sy, pierTop() - 4, ease(p)) + Math.sin(G.t * 6) * 2;
+    if (p >= 1) { j.sx = undefined; j.x = L.climbX; j.y = pierTop() - 4; setPhase("climb"); }
+  } else if (G.phase === "climb") {
+    const p = Math.min(1, G.phaseT / 0.7);
+    j.onDock = true;
+    j.y = lerp(pierTop() - 4, pierTop() - 2, ease(p));
+    j.x = lerp(L.climbX, L.climbX + 14, ease(p));
+    if (p >= 1) {
+      G.saves++; updateHud();
+      if (G.saves >= CONFIG.savesToWin) {
+        setPhase("win");
+        say(JAKE_PUSHED[9], 4);
+        tingSay("...fine", 3);
+        sarahSay("NO.", 3);
+        hint.textContent = "Ten. Ting gives up. Jake is on dry land.";
+        burst();
+        setTimeout(() => { show("saved"); stopLoop(); }, 3000);
+      } else {
+        setPhase("push");
+        G.tingSwing = 1;
+        tingSay(TING_PUSH[Math.min(G.saves - 1, TING_PUSH.length - 1)], 2.2);
+      }
+    }
+  } else if (G.phase === "push") {
+    const p = Math.min(1, G.phaseT / 0.9);
+    if (G.phaseT < 0.25) {
+      // Ting walks in and shoves
+      G.tingSwing = Math.sin(G.phaseT / 0.25 * Math.PI);
+    } else {
+      const q = (G.phaseT - 0.25) / 0.65;
+      j.onDock = q < 0.15;
+      const e2 = Math.min(1, q);
+      j.x = lerp(L.climbX + 14, L.jakeHomeX, e2);
+      j.y = lerp(pierTop() - 2, L.jakeHomeY, e2) - Math.sin(e2 * Math.PI) * 70;
+      if (q >= 1) {
+        G.splashes.push({ x: j.x, y: j.y, t: 0 });
+        j.drift = Math.random() * Math.PI * 2;
+        say(JAKE_PUSHED[Math.min(G.saves - 1, JAKE_PUSHED.length - 2)], 2.4);
+        hint.textContent = `${CONFIG.pusher} pushed him back in. ${CONFIG.savesToWin - G.saves} to go.`;
+        setPhase("aim");
+      }
+    }
+    if (p >= 1) G.tingSwing = 0;
+  }
+
+  for (const s of G.sharks) {
+    s.a += dt * s.speed * s.dir;
+    const want = G.phase === "aim" ? 95 + Math.sin(G.t * 0.7 + s.a) * 18 : 150;
+    s.r += (want - s.r) * Math.min(1, dt * 1.5);
+  }
+  for (const s of G.splashes) s.t += dt;
+  G.splashes = G.splashes.filter((s) => s.t < 0.9);
+}
+const sharkCenter = () => ({ x: G.phase === "aim" ? G.jake.x : L.jakeHomeX, y: G.phase === "aim" ? G.jake.y : L.jakeHomeY });
+function sharkX(s) { return sharkCenter().x + Math.cos(s.a) * s.r; }
+function sharkY(s) { return Math.max(L.horizon + 14, Math.min(pierTop() - 12, sharkCenter().y + Math.sin(s.a) * s.r * 0.55 + 6)); }
+
+/* ---------- Drawing ---------- */
+function draw() {
+  const t = G.t, horizon = L.horizon;
+  ctx.clearRect(0, 0, W, H);
+  let g = ctx.createLinearGradient(0, 0, 0, horizon);
+  g.addColorStop(0, "#ffe9c2"); g.addColorStop(1, "#ffb86b");
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, horizon);
+  ctx.fillStyle = "#fff1a8"; ctx.beginPath(); ctx.arc(W * 0.82, horizon - 22, 26, 0, Math.PI * 2); ctx.fill();
+  g = ctx.createLinearGradient(0, horizon, 0, H);
+  g.addColorStop(0, "#3fb6c8"); g.addColorStop(1, "#0b5570");
+  ctx.fillStyle = g; ctx.fillRect(0, horizon, W, H - horizon);
+  ctx.strokeStyle = "rgba(255,255,255,.22)"; ctx.lineWidth = 2;
+  for (let i = 0; i < 7; i++) {
+    const y = horizon + 18 + i * ((H - horizon) / 7);
+    ctx.beginPath();
+    for (let x = -20; x <= W + 20; x += 8) ctx.lineTo(x, y + Math.sin(x * 0.04 + t * 1.6 + i) * 3);
+    ctx.stroke();
+  }
+  for (const s of G.sharks) drawShark(s, true);
+  if (!G.jake.onDock) drawJakeWater();
+  for (const s of G.sharks) drawShark(s, false);
+  for (const s of G.splashes) {
+    const p = s.t / 0.9;
+    ctx.strokeStyle = `rgba(255,255,255,${1 - p})`; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.ellipse(s.x, s.y, 8 + p * 40, (8 + p * 40) * 0.45, 0, 0, Math.PI * 2); ctx.stroke();
+  }
+  drawPier();
+  drawSarah();
+  drawTing();
+  if (G.jake.onDock) drawJakeDock();
+  if (G.drag) drawAim();
+  if (G.tube) drawTube();
+  drawBubble(G.bubble, G.jake.x, G.jake.y - (G.jake.onDock ? 70 : 44));
+  drawBubble(G.tingBubble, L.tingX, pierTop() - 78);
+  drawBubble(G.sarahBubble, L.sarahX, pierTop() - 78);
+}
+function drawShark(s, shadow) {
+  const x = sharkX(s), y = sharkY(s);
+  const dir = Math.sign(-Math.sin(s.a) * s.dir) || 1;
+  if (shadow) {
+    ctx.fillStyle = "rgba(10,40,60,.35)";
+    ctx.beginPath(); ctx.ellipse(x, y + 8, 34, 10, 0, 0, Math.PI * 2); ctx.fill();
+    return;
+  }
+  ctx.fillStyle = "#3b4752";
+  ctx.beginPath();
+  ctx.moveTo(x - 16 * dir, y + 4);
+  ctx.quadraticCurveTo(x - 2 * dir, y - 26, x + 10 * dir, y - 22);
+  ctx.quadraticCurveTo(x + 8 * dir, y - 6, x + 16 * dir, y + 4);
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = "rgba(255,255,255,.5)"; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(x - 22, y + 5); ctx.quadraticCurveTo(x, y + 1, x + 22, y + 5); ctx.stroke();
+}
+function headAndFace(x, y, r, panic) {
+  ctx.fillStyle = "#f2c9a0";
+  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = "#2b1d14";
+  ctx.beginPath(); ctx.arc(x, y - r * 0.25, r, Math.PI * 1.05, Math.PI * 1.95); ctx.lineTo(x + r, y - r * 0.35); ctx.lineTo(x - r, y - r * 0.35); ctx.fill();
+  ctx.fillStyle = "#fff";
+  ctx.beginPath(); ctx.arc(x - r * 0.35, y, r * 0.27, 0, 7); ctx.arc(x + r * 0.35, y, r * 0.27, 0, 7); ctx.fill();
+  ctx.fillStyle = "#1c2a33";
+  const jit = Math.sin(G.t * 7) * 1.2 * panic;
+  ctx.beginPath(); ctx.arc(x - r * 0.35 + jit, y, r * 0.12, 0, 7); ctx.arc(x + r * 0.35 + jit, y, r * 0.12, 0, 7); ctx.fill();
+  ctx.fillStyle = "#7a2a2a";
+  ctx.beginPath(); ctx.ellipse(x, y + r * 0.5, r * 0.26, r * 0.3 + Math.sin(G.t * 12) * 1.5 * panic, 0, 0, 7); ctx.fill();
+}
+function drawJakeWater() {
+  const j = G.jake, x = j.x, y = j.y;
+  const panic = G.phase === "aim" ? 1 : 0.4;
+  if (G.phase === "swim") tubeShape(x, y + 10, 26, 1);
+  ctx.strokeStyle = "#f2c9a0"; ctx.lineWidth = 7; ctx.lineCap = "round";
+  const wave = Math.sin(G.t * 9) * 14 * panic;
+  ctx.beginPath(); ctx.moveTo(x - 14, y + 6); ctx.lineTo(x - 30, y - 26 - wave); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x + 14, y + 6); ctx.lineTo(x + 30, y - 26 + wave); ctx.stroke();
+  ctx.fillStyle = "#ffffff";
+  ctx.beginPath(); ctx.ellipse(x, y + 12, 20, 12, 0, Math.PI, 0); ctx.fill();
+  headAndFace(x, y - 10, 17, panic);
+  ctx.strokeStyle = "rgba(255,255,255,.65)"; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(x - 30, y + 14); ctx.quadraticCurveTo(x, y + 10 + Math.sin(G.t * 3) * 2, x + 30, y + 14); ctx.stroke();
+}
+function drawJakeDock() {
+  const x = G.jake.x, feet = G.jake.y;
+  // drips
+  ctx.fillStyle = "rgba(63,182,200,.7)";
+  for (let i = 0; i < 3; i++) ctx.fillRect(x - 10 + i * 10, feet - 30 + ((G.t * 40 + i * 17) % 30), 2, 5);
+  ctx.strokeStyle = "#2d3436"; ctx.lineWidth = 6; ctx.lineCap = "round";
+  ctx.beginPath(); ctx.moveTo(x - 6, feet - 14); ctx.lineTo(x - 7, feet); ctx.moveTo(x + 6, feet - 14); ctx.lineTo(x + 7, feet); ctx.stroke();
+  ctx.fillStyle = "#ffffff";
+  ctx.beginPath(); ctx.roundRect(x - 13, feet - 50, 26, 38, 8); ctx.fill();
+  ctx.strokeStyle = "#f2c9a0"; ctx.lineWidth = 6;
+  ctx.beginPath(); ctx.moveTo(x - 11, feet - 44); ctx.lineTo(x - 22, feet - 22); ctx.moveTo(x + 11, feet - 44); ctx.lineTo(x + 22, feet - 22); ctx.stroke();
+  headAndFace(x, feet - 62, 14, 0.3);
+  ctx.font = "700 11px Fredoka, sans-serif"; ctx.fillStyle = "#fff4e1"; ctx.textAlign = "center";
+  ctx.fillText(CONFIG.from.toUpperCase(), x, feet + 16);
+}
+function tubeShape(x, y, r, sc) {
+  ctx.save(); ctx.translate(x, y); ctx.scale(sc, sc * 0.75);
+  ctx.lineWidth = 12; ctx.strokeStyle = "#ff5d8f";
+  ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.stroke();
+  ctx.strokeStyle = "#ffd166"; ctx.setLineDash([r * 0.5, r * 1.07]); ctx.lineDashOffset = r * 0.25;
+  ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+}
+function drawAim() {
+  const v = aimVector(G.drag);
+  if (!v) return;
+  const s = sarahPos();
+  const n = Math.floor(Math.hypot(v.x1 - s.x, v.y1 - s.y) / 18);
+  for (let i = 1; i <= n; i++) {
+    const p = i / n;
+    const x = lerp(s.x, v.x1, p), y = lerp(s.y, v.y1, p) - Math.sin(p * Math.PI) * 90;
+    ctx.fillStyle = `rgba(255,255,255,${0.9 - p * 0.6})`;
+    ctx.beginPath(); ctx.arc(x, y, 3 + Math.sin(p * Math.PI) * 2, 0, 7); ctx.fill();
+  }
+  ctx.strokeStyle = "rgba(255,255,255,.75)"; ctx.lineWidth = 2; ctx.setLineDash([5, 6]);
+  ctx.beginPath(); ctx.arc(v.x1, v.y1, 18, 0, 7); ctx.stroke(); ctx.setLineDash([]);
+  // the pulled-back tube in Sarah's hand
+  tubeShape(s.x - v.nx * v.power * 0.25, s.y - v.ny * v.power * 0.25 - 16, 16, 1);
+}
+function drawTube() {
+  const T = G.tube, s = sarahPos();
+  const p = Math.min(1, (G.t - T.start) / T.dur);
+  const gx = lerp(T.x0, T.x1, p), gy = lerp(T.y0, T.y1, p);
+  const h = Math.sin(p * Math.PI) * 110;
+  ctx.fillStyle = "rgba(10,40,60,.25)";
+  ctx.beginPath(); ctx.ellipse(gx, gy, 20 - h * 0.05, 7, 0, 0, 7); ctx.fill();
+  ctx.save(); ctx.translate(gx, gy - h); ctx.rotate(T.spin + p * 5); ctx.translate(-gx, -(gy - h));
+  tubeShape(gx, gy - h, 24, 1 + Math.sin(p * Math.PI) * 0.45);
+  ctx.restore();
+}
+function drawPier() {
+  const top = pierTop();
+  ctx.fillStyle = "#7a4a22";
+  for (const px of [0.08, 0.3, 0.52, 0.74, 0.94]) ctx.fillRect(W * px - 7, top - 10, 14, L.pierH + 10);
+  ctx.fillStyle = "#b5733b"; ctx.fillRect(0, top, W, L.pierH);
+  ctx.strokeStyle = "rgba(60,30,10,.35)"; ctx.lineWidth = 2;
+  for (let y = top + 12; y < H; y += 14) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+  ctx.fillStyle = "#8f5527"; ctx.fillRect(0, top, W, 5);
+}
+function person(x, top, shirt, hair, label, opts) {
+  const { armAngle = 0, grin = false, lean = 0 } = opts || {};
+  ctx.save(); ctx.translate(x, top); ctx.rotate(lean);
+  ctx.strokeStyle = "#2d3436"; ctx.lineWidth = 6; ctx.lineCap = "round";
+  ctx.beginPath(); ctx.moveTo(-6, -12); ctx.lineTo(-6, 0); ctx.moveTo(6, -12); ctx.lineTo(6, 0); ctx.stroke();
+  ctx.fillStyle = shirt;
+  ctx.beginPath(); ctx.roundRect(-12, -46, 24, 36, 8); ctx.fill();
+  ctx.fillStyle = "#f2c9a0"; ctx.beginPath(); ctx.arc(0, -56, 12, 0, 7); ctx.fill();
+  ctx.fillStyle = hair; ctx.beginPath(); ctx.arc(0, -60, 12, Math.PI, Math.PI * 2); ctx.fill();
+  ctx.fillRect(-12, -60, 4, 16); ctx.fillRect(8, -60, 4, 16);
+  ctx.strokeStyle = "#1c2a33"; ctx.lineWidth = 2;
+  ctx.beginPath();
+  if (grin) ctx.arc(0, -55, 5, 0.15 * Math.PI, 0.85 * Math.PI); else { ctx.moveTo(-4, -52); ctx.lineTo(4, -52); }
+  ctx.stroke();
+  ctx.fillStyle = "#1c2a33"; ctx.beginPath(); ctx.arc(-4, -58, 1.5, 0, 7); ctx.arc(4, -58, 1.5, 0, 7); ctx.fill();
+  ctx.strokeStyle = "#f2c9a0"; ctx.lineWidth = 6;
+  ctx.beginPath(); ctx.moveTo(10, -38); ctx.lineTo(10 + Math.cos(armAngle) * 26, -38 + Math.sin(armAngle) * 26); ctx.stroke();
+  ctx.restore();
+  ctx.font = "700 11px Fredoka, sans-serif"; ctx.fillStyle = "#fff4e1"; ctx.textAlign = "center";
+  ctx.fillText(label, x, top + 16);
+}
+function drawSarah() {
+  let arm = -0.6;
+  if (G.drag) { const v = aimVector(G.drag); if (v) arm = Math.atan2(-v.ny, -v.nx); }
+  else if (G.tube) arm = Math.atan2(G.tube.y1 - G.tube.y0, G.tube.x1 - G.tube.x0);
+  const label = (CONFIG.friend || "YOU").toUpperCase();
+  person(L.sarahX, pierTop(), "#52d6c3", "#5a3a1e", label, { armAngle: arm });
+}
+function drawTing() {
+  const sw = G.tingSwing;
+  const x = L.tingX - sw * (L.tingX - L.climbX - 36);
+  person(x, pierTop(), "#6c5ce7", "#1a1210", CONFIG.pusher.toUpperCase(), {
+    armAngle: Math.PI + 0.2 - sw * 0.4 + (sw ? 0 : Math.sin(G.t * 3) * 0.1),
+    grin: true,
+    lean: -sw * 0.25,
+  });
+}
+function drawBubble(b, x, y) {
+  if (!b.text || G.t > b.until) return;
+  ctx.font = "600 14px Nunito, sans-serif";
+  const w = ctx.measureText(b.text).width + 20, h = 28;
+  const bx = Math.min(W - w - 6, Math.max(6, x - w / 2));
+  const by = y - h;
+  ctx.fillStyle = "#fff";
+  ctx.beginPath(); ctx.roundRect(bx, by, w, h, 10); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(x - 6, by + h); ctx.lineTo(x + 6, by + h); ctx.lineTo(x, by + h + 8); ctx.fill();
+  ctx.fillStyle = "#1c2a33"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.fillText(b.text, bx + w / 2, by + h / 2 + 1);
+  ctx.textBaseline = "alphabetic";
+}
+
+function loop(now) {
+  const dt = Math.min(0.05, (now - G.last) / 1000 || 0);
+  G.last = now;
+  update(dt);
+  draw();
+  G.raf = requestAnimationFrame(loop);
+}
+function startLoop() { cancelAnimationFrame(G.raf); G.last = performance.now(); G.raf = requestAnimationFrame(loop); }
+function stopLoop() { cancelAnimationFrame(G.raf); }
+
+/* ---------- Confetti ---------- */
+const cc = $("confetti"), cctx = cc.getContext("2d");
+function burst() {
+  cc.hidden = false;
+  const d = Math.min(window.devicePixelRatio || 1, 2);
+  cc.width = innerWidth * d; cc.height = innerHeight * d;
+  cctx.setTransform(d, 0, 0, d, 0, 0);
+  const colors = ["#ff5d5d", "#ffd166", "#52d6c3", "#6c5ce7", "#fff"];
+  const ps = Array.from({ length: 160 }, () => ({
+    x: innerWidth / 2 + (Math.random() - 0.5) * 80, y: innerHeight * 0.55,
+    vx: (Math.random() - 0.5) * 14, vy: -Math.random() * 16 - 6,
+    r: 4 + Math.random() * 6, c: pick(colors), a: Math.random() * 7, s: (Math.random() - 0.5) * 0.3,
+  }));
+  let t0 = performance.now();
+  (function f(now) {
+    const dt = Math.min(0.05, (now - t0) / 1000); t0 = now;
+    cctx.clearRect(0, 0, innerWidth, innerHeight);
+    let alive = 0;
+    for (const p of ps) {
+      p.vy += 30 * dt; p.x += p.vx; p.y += p.vy; p.a += p.s; p.vx *= 0.99;
+      if (p.y < innerHeight + 20) alive++;
+      cctx.save(); cctx.translate(p.x, p.y); cctx.rotate(p.a); cctx.fillStyle = p.c;
+      cctx.fillRect(-p.r / 2, -p.r / 4, p.r, p.r / 2); cctx.restore();
+    }
+    if (alive) requestAnimationFrame(f); else { cc.hidden = true; }
+  })(performance.now());
+}
+
+/* ---------- Flow ---------- */
+$("startBtn").addEventListener("click", () => {
+  show("game");
+  resize();
+  startGame();
+  startLoop();
+});
+$("toGiftBtn").addEventListener("click", () => show("gift"));
+
+const box = $("box"), letter = $("letter");
+box.addEventListener("click", () => {
+  if (box.classList.contains("open")) return;
+  box.classList.add("open");
+  box.setAttribute("aria-label", "Present opened");
+  $("boxHint").hidden = true;
+  const name = CONFIG.friend ? CONFIG.friend : "you";
+  const paras = CONFIG.letter.map((p) => `<p>${fill(p)}</p>`).join("");
+  letter.innerHTML = `<p>Dear ${name},</p>${paras}<p class="sig">${fill(CONFIG.from)}</p><p class="ps">${fill(CONFIG.ps)}</p>`;
+  letter.hidden = false;
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    letter.classList.add("in");
+    letter.scrollIntoView({ behavior: "smooth", block: "start" });
+  }));
+  burst();
+});
+</script>
+</body></html>
