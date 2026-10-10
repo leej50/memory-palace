@@ -562,7 +562,11 @@ const JAKE_PUSHED = [
 const TING_PUSH = ["oops", "sorry bao bei", "baby shark dududu", "reflex", "sorry bao bei", "...fine"];
 const TING_IDLE = ["he'll be fine", "he's dramatic", "want a snack?", "nice throw", "lol", "i'll get a towel", "sorry bao bei", "baby shark dududu", "baby shark dududu"];
 const TING_EATEN = ["oh no", "lol", "rip", "he's fine probably", "sorry bao bei", "baby shark dududu 🦈"];
-const MARCWOOD_LYRICS = ["🎤 MR BRIGHTSIDE!!!", "HEY YAAAAA", "I WANT IT THAT WAYYYY", "SINCE U BEEN GOOONE", "ALL STAAAR!!!", "YEAHHHH 🔥", "TEMPERATUREEEE", "CRAZY IN LOOOVE", "DUDE!!!!", "HOLLABACK GIRRRL", "DROP IT LIKE IT'S HOT"];
+const MARCWOOD_LYRICS = [
+  "🎤 PARTY ROCK IS IN THE HOUSE TONIGHT", "CALL ME MAYBEEEE", "BABY YOU'RE A FIREWORK", "TIK TOK ON THE CLOCK",
+  "DYNAMITEEEE 🧨", "OPPA GANGNAM STYLE", "SEXY AND I KNOW IT", "BABY BABY BABY OHHH",
+  "TONIGHT'S GONNA BE A GOOD NIGHT", "ROLLING IN THE DEEEEP", "WE FOUND LOOOVE", "SOMEBODY THAT I USED TO KNOWWW",
+];
 const SARAH_START = ["JAKE?? JAKE!!!", "OH MY GOD", "HOLD ON I'M COMING!!"];
 const SARAH_THROW = ["GO GO GO", "pleeeease 🙏", "CATCH IT", "this one. THIS ONE.", "ahhhhh"];
 const SARAH_HIT = ["YESSS 😭", "I GOT HIM!!", "SWIM SWIM SWIM", "LET'S GOOO", "ok ok come here!!"];
@@ -902,8 +906,8 @@ function drawBoat() {
     tingSay("turn it UP", 3);
   }
   if (G.t > b.nextLyric) {
-    b.bubble = { text: MARCWOOD_LYRICS[b.i++ % MARCWOOD_LYRICS.length], until: G.t + 1.3 };
-    b.nextLyric = G.t + 1.5;
+    b.bubble = { text: MARCWOOD_LYRICS[b.i++ % MARCWOOD_LYRICS.length], until: G.t + 1.2 };
+    b.nextLyric = G.t + 1.35;
   }
   const x = W + 90 - (W + 180) * p;
   const y = L.horizon + 36 + Math.sin(G.t * 2.2) * 2;
