@@ -173,12 +173,99 @@
 
   /* Gift */
   .gift-wrap {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 14px;
     padding-block: 10px;
   }
+  .rays-wrap { position: absolute; inset: 0; overflow: hidden; pointer-events: none; border-radius: 20px; }
+  .rays {
+    position: absolute;
+    left: 50%; top: 150px;
+    width: 640px; height: 640px;
+    transform: translate(-50%, -50%);
+    background: repeating-conic-gradient(rgba(255,209,102,.5) 0 11deg, rgba(255,209,102,0) 11deg 24deg);
+    -webkit-mask: radial-gradient(circle, #000 0 20%, transparent 68%);
+    mask: radial-gradient(circle, #000 0 20%, transparent 68%);
+    opacity: 0;
+    transition: opacity 1.2s;
+    animation: spin 18s linear infinite;
+  }
+  @keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+  .gift-wrap.open .rays { opacity: 1; }
+  .box { position: relative; z-index: 1; }
+  .box::before {
+    content: "";
+    position: absolute; inset: 30px 0 0;
+    border-radius: 16px;
+    box-shadow: 0 0 0 0 rgba(255,209,102,0);
+    transition: box-shadow .4s;
+    pointer-events: none;
+  }
+  .box[data-stage="1"]::before { box-shadow: 0 0 28px 6px rgba(255,209,102,.55); }
+  .box[data-stage="2"]::before { box-shadow: 0 0 60px 16px rgba(255,209,102,.8); }
+  .box.open::before { box-shadow: 0 0 90px 30px rgba(255,209,102,.6); }
+  .box[data-stage="1"] { animation: shake .45s ease-in-out; }
+  .box[data-stage="2"] { animation: shake .45s ease-in-out 2; }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0) rotate(0); }
+    20% { transform: translateX(-8px) rotate(-5deg); }
+    40% { transform: translateX(8px) rotate(5deg); }
+    60% { transform: translateX(-6px) rotate(-3deg); }
+    80% { transform: translateX(6px) rotate(3deg); }
+  }
+  .lid-light {
+    position: absolute;
+    left: 14px; right: 14px; top: 76px;
+    height: 4px;
+    background: #fff7c2;
+    box-shadow: 0 0 12px 4px #ffe27a;
+    opacity: 0;
+    transition: opacity .3s;
+  }
+  .box[data-stage="1"] .lid-light { opacity: .5; }
+  .box[data-stage="2"] .lid-light { opacity: 1; }
+  .box.open .lid-light { opacity: 0; }
+  .balloon {
+    position: fixed;
+    bottom: -140px;
+    width: 46px; height: 58px;
+    border-radius: 50% 50% 50% 50% / 45% 45% 55% 55%;
+    background: var(--b, var(--coral));
+    box-shadow: inset -8px -8px 0 rgba(0,0,0,.12), inset 6px 6px 0 rgba(255,255,255,.25);
+    z-index: 9;
+    pointer-events: none;
+    animation: rise var(--d, 7s) linear forwards;
+  }
+  .balloon::after {
+    content: "";
+    position: absolute;
+    left: 50%; top: 100%;
+    width: 2px; height: 70px;
+    background: rgba(28,42,51,.5);
+    transform: translateX(-50%);
+  }
+  @keyframes rise {
+    0% { transform: translateY(0) rotate(-4deg); }
+    50% { transform: translateY(-55vh) rotate(5deg); }
+    100% { transform: translateY(-130vh) rotate(-3deg); }
+  }
+  .mute {
+    background: transparent;
+    border: 2px solid #d9c9a8;
+    color: var(--ink-soft);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: var(--display);
+    letter-spacing: .04em;
+  }
+  .mute:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+  .mute[aria-pressed="true"] { opacity: .55; }
+  .letter p.opening { font-size: 34px; line-height: 32px; font-weight: 600; }
   .box {
     position: relative;
     width: 200px;
@@ -267,12 +354,13 @@
     font-size: 23px;
     line-height: 32px;
     color: var(--ink);
-    transform: translateY(40px);
+    transform: perspective(900px) rotateX(-75deg) translateY(30px);
+    transform-origin: top center;
     opacity: 0;
-    transition: transform .9s .35s cubic-bezier(.2,.9,.3,1), opacity .9s .35s;
+    transition: transform 1.1s .35s cubic-bezier(.2,.9,.3,1), opacity .8s .35s;
     rotate: -0.6deg;
   }
-  .letter.in { transform: none; opacity: 1; }
+  .letter.in { transform: perspective(900px) rotateX(0) translateY(0); opacity: 1; }
   .letter p { color: var(--ink); max-width: none; margin: 0 0 32px; font-family: inherit; }
   .letter p:last-child { margin: 0; }
   .letter .sig { font-size: 30px; font-weight: 600; }
@@ -287,7 +375,7 @@
     z-index: 10;
   }
   @media (prefers-reduced-motion: reduce) {
-    .box, .hearts { animation: none; }
+    .box, .hearts, .rays, .balloon { animation: none; }
     .letter, .box-lid, .bow { transition-duration: .01s; }
   }
 </style>
@@ -296,7 +384,7 @@
   <section id="intro" class="screen">
     <p class="eyebrow">Urgent. Sort of.</p>
     <h1>Sarah. Jake is in the water.</h1>
-    <p>Ting pushed him in. There are sharks. He swims about as well as a shopping cart. You and Ting are the only two people on the dock, and Ting is not going to help.</p>
+    <p>Ting pushed him in. There are sharks, and they are slowly closing in. He swims about as well as a shopping cart. You and Ting are the only two people on the dock, and Ting is not going to help.</p>
     <p>Get him out and you can have your birthday present. He needs to make it onto the dock ten times. You'll see why.</p>
     <button class="big" id="startBtn">Fine, I'll save him</button>
   </section>
@@ -304,8 +392,11 @@
   <section id="game" class="screen" hidden>
     <div class="hud">
       <div class="hud-row">
-        <span class="hud-label" id="hudLabel">Rescued</span>
-        <span class="hud-value" id="hudValue">0 / 10</span>
+        <span class="hud-label" id="hudLabel">Level 1</span>
+        <span style="display:flex;gap:10px;align-items:center">
+          <span class="hud-value" id="hudValue">0 / 10</span>
+          <button class="mute" id="muteBtn" aria-pressed="false">Sound on</button>
+        </span>
       </div>
       <div class="meter"><div id="meterFill"></div></div>
     </div>
@@ -319,21 +410,24 @@
     <div class="hearts">🛟 🦈 💛</div>
     <p class="eyebrow">Rescue complete</p>
     <h2>Ten rescues. Ting has finally given up.</h2>
-    <p id="savedStats">Jake is soaked, slightly chewed, and extremely grateful. He says he had a present ready the whole time, which raises questions about why he was standing so close to Ting.</p>
+    <p id="savedStats">Jake is soaked, slightly chewed, and extremely grateful. He also, suspiciously, has a present ready.</p>
     <button class="big" id="toGiftBtn">Okay, what is it</button>
   </section>
 
   <section id="gift" class="screen" hidden>
     <p class="eyebrow">For you</p>
     <h2>A slightly damp birthday present.</h2>
-    <div class="gift-wrap">
-      <button class="box" id="box" aria-label="Open the present">
+    <div class="gift-wrap" id="giftWrap">
+      <div class="rays-wrap"><div class="rays"></div></div>
+      <button class="box" id="box" aria-label="Open the present" data-stage="0">
         <div class="box-body"></div>
+        <div class="lid-light"></div>
         <div class="box-lid"></div>
         <div class="bow"></div>
       </button>
-      <p id="boxHint">Tap the box to open it.</p>
+      <p id="boxHint">Tap the box.</p>
       <article class="letter" id="letter" hidden></article>
+      <button class="quiet" id="againBtn" hidden>Save him again</button>
     </div>
   </section>
 </main>
@@ -347,17 +441,62 @@ const CONFIG = {
   pusher: "Ting",
   savesToWin: 10,
   letter: [
-    "Happy birthday!!",
-    "First of all: thank you for saving me. Ten times. {pusher} just stood there pushing me back in, which I think tells you everything about who your real friends are.",
-    "Second: I wanted to make you something instead of just sending a text, because a text felt too small for how glad I am that you exist. You make everything louder and funnier and a little more chaotic, and my life is better for it.",
-    "I hope this year is kind to you. I hope you get the things you've been quietly wanting and a few things you didn't think to ask for. I hope you laugh so hard it hurts at least once a week. And I hope you let people spoil you today, because you spend most of the year looking after everyone else.",
-    "Thank you for being my friend. Thank you for the rescue(s). Please don't tell {pusher} I cried a little.",
+    "Happy birthday Sarah!!",
+    "Welcome to the unc/auntie decade of your life. Jokes aside, even though we've only known each other for like a month, I'm so grateful to have met you and you're already a best friend to me. It's so rare to meet someone as positive and kind as you are, so I'm really glad I ended up staying on SS to find you. And you better stay that way and not bring the nonchalant Sarah back out.",
+    "Hope you have a good birthday!",
   ],
-  ps: "P.S. We are not inviting {pusher} to the dock again.",
+  signature: "-Lee",
+  ps: "",
 };
 /* ==================================== */
 
 const $ = (id) => document.getElementById(id);
+
+/* Tiny synth so there are no audio files to load. */
+const SFX = (() => {
+  let ac = null, muted = false;
+  try { muted = localStorage.getItem("sj-muted") === "1"; } catch (e) {}
+  function a() {
+    if (!ac) { try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; } }
+    if (ac.state === "suspended") ac.resume();
+    return ac;
+  }
+  function tone(f, dur, type = "sine", vol = 0.2, slide = 0) {
+    const c = a(); if (!c || muted) return;
+    const o = c.createOscillator(), g = c.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, c.currentTime);
+    if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(30, f + slide), c.currentTime + dur);
+    g.gain.setValueAtTime(vol, c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + dur);
+    o.connect(g).connect(c.destination); o.start(); o.stop(c.currentTime + dur);
+  }
+  function noise(dur, vol = 0.15, hp = 800) {
+    const c = a(); if (!c || muted) return;
+    const n = Math.floor(c.sampleRate * dur), b = c.createBuffer(1, n, c.sampleRate), d = b.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
+    const src = c.createBufferSource(); src.buffer = b;
+    const f = c.createBiquadFilter(); f.type = "highpass"; f.frequency.value = hp;
+    const g = c.createGain(); g.gain.value = vol;
+    src.connect(f).connect(g).connect(c.destination); src.start();
+  }
+  const seq = (notes, step, dur, type, vol) => notes.forEach((f, i) => setTimeout(() => tone(f, dur, type, vol), i * step));
+  return {
+    throw() { noise(0.25, 0.1, 1500); tone(280, 0.25, "sine", 0.07, 420); },
+    splash() { noise(0.45, 0.2, 350); },
+    hit() { tone(660, 0.12, "square", 0.07); setTimeout(() => tone(990, 0.22, "square", 0.07), 90); },
+    push() { tone(220, 0.18, "sawtooth", 0.1, -140); },
+    chomp() { tone(95, 0.35, "sawtooth", 0.25, -55); noise(0.15, 0.2, 200); },
+    win() { seq([523, 659, 784, 1047], 120, 0.4, "triangle", 0.14); },
+    shake(n) { tone(160 + n * 70, 0.09, "square", 0.06); noise(0.08, 0.05, 2000); },
+    open() { seq([392, 523, 659, 784, 1047, 1319], 95, 0.55, "triangle", 0.13); setTimeout(() => noise(0.6, 0.15, 900), 500); },
+    toggle() { muted = !muted; try { localStorage.setItem("sj-muted", muted ? "1" : "0"); } catch (e) {} return muted; },
+    get muted() { return muted; },
+  };
+})();
+const muteBtn = document.getElementById("muteBtn");
+function paintMute() { muteBtn.textContent = SFX.muted ? "Sound off" : "Sound on"; muteBtn.setAttribute("aria-pressed", String(SFX.muted)); }
+muteBtn.addEventListener("click", () => { SFX.toggle(); paintMute(); });
+paintMute();
 const fill = (s) => s.replace(/\{pusher\}/g, CONFIG.pusher).replace(/\{from\}/g, CONFIG.from).replace(/\{friend\}/g, CONFIG.friend);
 const show = (id) => {
   for (const s of document.querySelectorAll(".screen")) s.hidden = s.id !== id;
@@ -388,8 +527,9 @@ const G = {
   phase: "idle",      // aim | swim | climb | push | win
   phaseT: 0,
   t: 0, last: 0,
-  saves: 0, throws: 0, stolen: 0,
-  jake: { x: 0, y: 0, drift: 0, onDock: false },
+  saves: 0, throws: 0, stolen: 0, eatenCount: 0,
+  chomp: null, eater: null,
+  jake: { x: 0, y: 0, drift: 0, onDock: false, under: false },
   sharks: [],
   tube: null,          // { x0,y0,x1,y1,start,dur }
   drag: null,          // { sx, sy, cx, cy }
@@ -418,8 +558,8 @@ const JAKE_PUSHED = [
   "TING.", "again??", "why", "i'm starting to think this is on purpose", "halfway. i think.",
   "my shoes are gone", "sarah i believe in you", "ting i will remember this", "one more. please.", "I'M OUT. I'M OUT.",
 ];
-const TING_PUSH = ["oops", "slipped", "my bad", "he's heavy", "lol", "reflex", "the wind did it", "sorry sarah", "ok last one", "...fine"];
-const TING_IDLE = ["he'll be fine", "he's dramatic", "want a snack?", "nice throw", "lol", "i'll get a towel"];
+const TING_PUSH = ["oops", "sorry bao bei", "slipped", "he's heavy", "lol", "reflex", "the wind did it", "sorry bao bei", "ok last one", "...fine"];
+const TING_IDLE = ["he'll be fine", "he's dramatic", "want a snack?", "nice throw", "lol", "i'll get a towel", "sorry bao bei"];
 const SARAH_MISS = ["missed", "ugh", "closer", "hang on", "he keeps MOVING"];
 
 function say(text, dur = 2.2) { G.bubble = { text, until: G.t + dur }; }
@@ -427,19 +567,38 @@ function tingSay(text, dur = 2.4) { G.tingBubble = { text, until: G.t + dur }; }
 function sarahSay(text, dur = 1.6) { G.sarahBubble = { text, until: G.t + dur }; }
 function setPhase(p) { G.phase = p; G.phaseT = 0; }
 function updateHud() {
+  $("hudLabel").textContent = G.saves >= CONFIG.savesToWin ? "Rescued" : `Level ${G.saves + 1}`;
   hudValue.textContent = `${G.saves} / ${CONFIG.savesToWin}`;
   meterFill.style.width = (G.saves / CONFIG.savesToWin * 100) + "%";
 }
 
+const SHARK_FAR = 165, EAT_RADIUS = 26;
+const closeRate = () => 7 + G.saves * 0.7;   // px per second; level 1 gives ~23s, level 10 ~12s
+function resetSharks() {
+  G.sharks = [0, 1, 2].map((i) => ({ a: (i / 3) * Math.PI * 2 + Math.random(), r: SHARK_FAR + i * 10, speed: 0.5 + i * 0.15, dir: i % 2 ? -1 : 1 }));
+}
+function eaten(shark) {
+  G.eatenCount++;
+  G.tube = null; G.drag = null;
+  G.jake.under = true;
+  G.splashes.push({ x: G.jake.x, y: G.jake.y, t: 0 });
+  G.chomp = { x: G.jake.x, y: G.jake.y - 30, until: G.t + 1.2 };
+  SFX.chomp();
+  G.eater = shark;
+  tingSay(pick(["oh no", "lol", "rip", "he's fine probably", "sorry bao bei"]), 2);
+  sarahSay(pick(["JAKE", "no!!", "oh no"]), 1.6);
+  hint.textContent = "Eaten. He got spat back out, but this rescue restarts. Sharks close in slowly, so don't take forever.";
+  setPhase("eaten");
+}
 function startGame() {
   G.t = 0; G.saves = 0; G.throws = 0; G.stolen = 0;
   G.tube = null; G.drag = null;
   G.jake.x = L.jakeHomeX; G.jake.y = L.jakeHomeY; G.jake.onDock = false; G.jake.drift = 0;
-  G.sharks = [0, 1, 2].map((i) => ({ a: (i / 3) * Math.PI * 2, r: 95 + i * 12, speed: 0.5 + i * 0.15, dir: i % 2 ? -1 : 1 }));
+  resetSharks();
   updateHud();
   setPhase("aim");
   say("HELP", 2.5); tingSay("whoops", 3);
-  hint.textContent = "Press and drag back anywhere, like a slingshot. Let go to launch the tube at Jake.";
+  hint.textContent = "Press and drag back anywhere, like a slingshot. Let go to launch the tube. If a fin reaches Jake, he's lunch.";
 }
 
 /* Aiming: pull back from the press point; the tube goes the opposite way. */
@@ -474,6 +633,7 @@ function release(e) {
   G.throws++;
   const dist = Math.hypot(v.x1 - s.x, v.y1 - s.y);
   G.tube = { x0: s.x, y0: s.y, x1: v.x1, y1: v.y1, start: G.t, dur: 0.45 + dist / 900, spin: Math.random() * 6 };
+  SFX.throw();
   say(pick(["please", "yes!!", "here??", "ahh", "to ME"]), 1);
 }
 canvas.addEventListener("pointerup", release);
@@ -484,6 +644,7 @@ function landTube() {
   const offWater = T.y1 < L.horizon - 10 || T.y1 > pierTop();
   const hitJake = !offWater && Math.hypot(T.x1 - j.x, T.y1 - j.y) < 46;
   if (hitJake) {
+    SFX.hit();
     G.tube = null;
     setPhase("swim");
     say(pick(["got it!!", "YES", "ok ok ok", "swimming!!"]), 1.6);
@@ -492,9 +653,10 @@ function landTube() {
   }
   const shark = G.sharks.find((s) => Math.hypot(T.x1 - sharkX(s), T.y1 - sharkY(s)) < 34);
   G.splashes.push({ x: T.x1, y: T.y1, t: 0 });
+  if (!offWater) SFX.splash();
   G.tube = null;
   if (offWater) { sarahSay("that's the dock"); hint.textContent = "That one landed on the dock. Aim for the water."; return; }
-  if (shark) { G.stolen++; say("you threw it to the SHARK", 2); tingSay("lol", 1.6); hint.textContent = "The shark has it now. Try again."; return; }
+  if (shark) { G.stolen++; shark.r = SHARK_FAR; say("you threw it to the SHARK", 2); tingSay("lol", 1.6); hint.textContent = "The shark took it and swam off with it. At least it's further away now."; return; }
   sarahSay(pick(SARAH_MISS));
   say(pick(["missed!!", "that's not me", "closer!!", "other way!!", "lead me a bit!!"]), 1.6);
   hint.textContent = "Missed. He drifts, so aim a little ahead of him.";
@@ -513,10 +675,23 @@ function update(dt) {
     j.x += (tx - j.x) * Math.min(1, dt * 3);
     j.y += (ty - j.y) * Math.min(1, dt * 3);
     if (G.tube && (G.t - G.tube.start) / G.tube.dur >= 1) landTube();
+    const biter = G.sharks.find((s) => Math.hypot(sharkX(s) - j.x, sharkY(s) - j.y) < EAT_RADIUS);
+    if (biter) { eaten(biter); return; }
     if (G.t > G.nextChatter) {
       G.nextChatter = G.t + 3.5 + Math.random() * 3;
       if (G.t > G.bubble.until) say(pick(JAKE_PANIC), 1.8);
       else tingSay(pick(TING_IDLE), 1.8);
+    }
+  } else if (G.phase === "eaten") {
+    if (G.eater) { G.eater.r += (0 - G.eater.r) * Math.min(1, dt * 8); }
+    if (G.phaseT > 1.9) {
+      j.under = false; j.x = L.jakeHomeX; j.y = L.jakeHomeY; j.drift = Math.random() * Math.PI * 2;
+      resetSharks();
+      G.eater = null;
+      G.splashes.push({ x: j.x, y: j.y, t: 0 });
+      say(pick(["it spat me out. rude.", "i tasted bad apparently", "ok that happened", "i'm back. barely."]), 2.4);
+      G.nextChatter = G.t + 3;
+      setPhase("aim");
     }
   } else if (G.phase === "swim") {
     const p = Math.min(1, G.phaseT / 1.6);
@@ -537,10 +712,14 @@ function update(dt) {
         tingSay("...fine", 3);
         sarahSay("NO.", 3);
         hint.textContent = "Ten. Ting gives up. Jake is on dry land.";
+        SFX.win();
         burst();
-        setTimeout(() => { show("saved"); stopLoop(); }, 3000);
+        const st = $("savedStats");
+      st.textContent = `${G.throws} throws, ${G.eatenCount === 0 ? "never eaten" : G.eatenCount === 1 ? "eaten once" : `eaten ${G.eatenCount} times`}. Jake is soaked, slightly chewed, and extremely grateful. He also, suspiciously, has a present ready.`;
+      setTimeout(() => { show("saved"); stopLoop(); }, 3000);
       } else {
         setPhase("push");
+        SFX.push();
         G.tingSwing = 1;
         tingSay(TING_PUSH[Math.min(G.saves - 1, TING_PUSH.length - 1)], 2.2);
       }
@@ -558,6 +737,7 @@ function update(dt) {
       j.y = lerp(pierTop() - 2, L.jakeHomeY, e2) - Math.sin(e2 * Math.PI) * 70;
       if (q >= 1) {
         G.splashes.push({ x: j.x, y: j.y, t: 0 });
+        SFX.splash();
         j.drift = Math.random() * Math.PI * 2;
         say(JAKE_PUSHED[Math.min(G.saves - 1, JAKE_PUSHED.length - 2)], 2.4);
         hint.textContent = `${CONFIG.pusher} pushed him back in. ${CONFIG.savesToWin - G.saves} to go.`;
@@ -569,13 +749,13 @@ function update(dt) {
 
   for (const s of G.sharks) {
     s.a += dt * s.speed * s.dir;
-    const want = G.phase === "aim" ? 95 + Math.sin(G.t * 0.7 + s.a) * 18 : 150;
-    s.r += (want - s.r) * Math.min(1, dt * 1.5);
+    if (G.phase === "aim") s.r = Math.max(0, s.r - dt * closeRate());
+    else if (G.phase !== "eaten") s.r += (SHARK_FAR - s.r) * Math.min(1, dt * 1.5);
   }
   for (const s of G.splashes) s.t += dt;
   G.splashes = G.splashes.filter((s) => s.t < 0.9);
 }
-const sharkCenter = () => ({ x: G.phase === "aim" ? G.jake.x : L.jakeHomeX, y: G.phase === "aim" ? G.jake.y : L.jakeHomeY });
+const sharkCenter = () => (G.phase === "aim" || G.phase === "eaten") ? { x: G.jake.x, y: G.jake.y } : { x: L.jakeHomeX, y: L.jakeHomeY };
 function sharkX(s) { return sharkCenter().x + Math.cos(s.a) * s.r; }
 function sharkY(s) { return Math.max(L.horizon + 14, Math.min(pierTop() - 12, sharkCenter().y + Math.sin(s.a) * s.r * 0.55 + 6)); }
 
@@ -598,8 +778,18 @@ function draw() {
     ctx.stroke();
   }
   for (const s of G.sharks) drawShark(s, true);
-  if (!G.jake.onDock) drawJakeWater();
+  if (G.phase === "aim") drawDanger();
+  if (!G.jake.onDock && !G.jake.under) drawJakeWater();
+  if (G.jake.under) drawBubbles();
   for (const s of G.sharks) drawShark(s, false);
+  if (G.chomp && G.t < G.chomp.until) {
+    const k = 1 + Math.sin((G.chomp.until - G.t) * 20) * 0.08;
+    ctx.save(); ctx.translate(G.chomp.x, G.chomp.y); ctx.rotate(-0.15); ctx.scale(k, k);
+    ctx.font = "700 34px Fredoka, sans-serif"; ctx.textAlign = "center";
+    ctx.lineWidth = 6; ctx.strokeStyle = "#1c2a33"; ctx.strokeText("CHOMP", 0, 0);
+    ctx.fillStyle = "#ff5d5d"; ctx.fillText("CHOMP", 0, 0);
+    ctx.restore();
+  }
   for (const s of G.splashes) {
     const p = s.t / 0.9;
     ctx.strokeStyle = `rgba(255,255,255,${1 - p})`; ctx.lineWidth = 3;
@@ -611,9 +801,28 @@ function draw() {
   if (G.jake.onDock) drawJakeDock();
   if (G.drag) drawAim();
   if (G.tube) drawTube();
-  drawBubble(G.bubble, G.jake.x, G.jake.y - (G.jake.onDock ? 70 : 44));
+  if (!G.jake.under) drawBubble(G.bubble, G.jake.x, G.jake.y - (G.jake.onDock ? 70 : 44));
   drawBubble(G.tingBubble, L.tingX, pierTop() - 78);
   drawBubble(G.sarahBubble, L.sarahX, pierTop() - 78);
+}
+function drawDanger() {
+  const j = G.jake;
+  const closest = Math.min(...G.sharks.map((s) => Math.hypot(sharkX(s) - j.x, sharkY(s) - j.y)));
+  if (closest > 75) return;
+  const k = 1 - Math.max(0, closest - EAT_RADIUS) / (75 - EAT_RADIUS);
+  ctx.strokeStyle = `rgba(255,93,93,${0.35 + k * 0.5 + Math.sin(G.t * 10) * 0.15})`;
+  ctx.lineWidth = 3; ctx.setLineDash([6, 6]);
+  ctx.beginPath(); ctx.ellipse(j.x, j.y + 8, 48 + Math.sin(G.t * 10) * 3, 24, 0, 0, 7); ctx.stroke();
+  ctx.setLineDash([]);
+}
+function drawBubbles() {
+  const j = G.jake;
+  for (let i = 0; i < 6; i++) {
+    const ph = (G.phaseT * 1.3 + i * 0.37) % 1;
+    const x = j.x + Math.sin(i * 2.1 + G.t * 2) * 16, y = j.y + 10 - ph * 40;
+    ctx.fillStyle = `rgba(255,255,255,${0.8 - ph * 0.7})`;
+    ctx.beginPath(); ctx.arc(x, y, 2 + (i % 3), 0, 7); ctx.fill();
+  }
 }
 function drawShark(s, shadow) {
   const x = sharkX(s), y = sharkY(s);
@@ -816,16 +1025,43 @@ $("startBtn").addEventListener("click", () => {
   startLoop();
 });
 $("toGiftBtn").addEventListener("click", () => show("gift"));
+$("againBtn").addEventListener("click", () => location.reload());
 
 const box = $("box"), letter = $("letter");
+function balloons() {
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const colors = ["#ff5d5d", "#ffd166", "#52d6c3", "#6c5ce7", "#ff5d8f"];
+  for (let i = 0; i < 10; i++) {
+    const b = document.createElement("div");
+    b.className = "balloon";
+    b.style.left = (5 + Math.random() * 90) + "vw";
+    b.style.setProperty("--b", pick(colors));
+    b.style.setProperty("--d", (6 + Math.random() * 4) + "s");
+    b.style.animationDelay = (Math.random() * 1.8) + "s";
+    document.body.appendChild(b);
+    setTimeout(() => b.remove(), 13000);
+  }
+}
+let boxStage = 0;
 box.addEventListener("click", () => {
   if (box.classList.contains("open")) return;
+  boxStage++;
+  if (boxStage < 3) {
+    box.dataset.stage = String(boxStage);
+    SFX.shake(boxStage);
+    $("boxHint").textContent = boxStage === 1 ? "Something's in there. Tap again." : "One more.";
+    return;
+  }
   box.classList.add("open");
+  $("giftWrap").classList.add("open");
   box.setAttribute("aria-label", "Present opened");
   $("boxHint").hidden = true;
-  const name = CONFIG.friend ? CONFIG.friend : "you";
-  const paras = CONFIG.letter.map((p) => `<p>${fill(p)}</p>`).join("");
-  letter.innerHTML = `<p>Dear ${name},</p>${paras}<p class="sig">${fill(CONFIG.from)}</p><p class="ps">${fill(CONFIG.ps)}</p>`;
+  SFX.open();
+  balloons();
+  setTimeout(() => $("againBtn").hidden = false, 2500);
+  const paras = CONFIG.letter.map((p, i) => `<p class="${i === 0 ? "opening" : ""}">${fill(p)}</p>`).join("");
+  const ps = CONFIG.ps ? `<p class="ps">${fill(CONFIG.ps)}</p>` : "";
+  letter.innerHTML = `${paras}<p class="sig">${fill(CONFIG.signature)}</p>${ps}`;
   letter.hidden = false;
   requestAnimationFrame(() => requestAnimationFrame(() => {
     letter.classList.add("in");
