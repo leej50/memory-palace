@@ -385,7 +385,7 @@
     <p class="eyebrow">Urgent. Sort of.</p>
     <h1>Sarah. Jake is in the water.</h1>
     <p>Ting pushed him in. There are sharks, and they are closing in. You and Ting are the only two people on the dock, and Ting is not going to help.</p>
-    <p>Get him out and you can have your birthday present. He needs to make it onto the dock ten times. You'll see why.</p>
+    <p>Get him out and you can have your birthday present. He needs to make it onto the dock five times. You'll see why.</p>
     <button class="big" id="startBtn">Fine, I'll save him</button>
   </section>
 
@@ -394,7 +394,7 @@
       <div class="hud-row">
         <span class="hud-label" id="hudLabel">Level 1</span>
         <span style="display:flex;gap:10px;align-items:center">
-          <span class="hud-value" id="hudValue">0 / 10</span>
+          <span class="hud-value" id="hudValue">0 / 5</span>
           <button class="mute" id="muteBtn" aria-pressed="false">Sound on</button>
         </span>
       </div>
@@ -409,7 +409,7 @@
   <section id="saved" class="screen" hidden>
     <div class="hearts">🛟 🦈 💛</div>
     <p class="eyebrow">Rescue complete</p>
-    <h2>Ten rescues. Ting has finally given up.</h2>
+    <h2>Five rescues. Ting has finally given up.</h2>
     <p id="savedStats">Jake is soaked, slightly chewed, and extremely grateful. He also, suspiciously, has a present ready.</p>
     <button class="big" id="toGiftBtn">Okay, what is it</button>
   </section>
@@ -439,7 +439,7 @@ const CONFIG = {
   friend: "Sarah",
   from: "Jake",
   pusher: "Ting",
-  savesToWin: 10,
+  savesToWin: 5,
   letter: [
     "Happy birthday Sarah!!",
     "Welcome to the unc/auntie decade of your life. Jokes aside, even though we've only known each other for like a month, I'm so grateful to have met you and you're already a best friend to me. It's so rare to meet someone as positive and kind as you are, so I'm really glad I ended up staying on SS to find you. And you better stay that way and not bring the nonchalant Sarah back out.",
@@ -555,10 +555,9 @@ const pierTop = () => H - L.pierH;
 
 const JAKE_PANIC = ["HELP", "there are SHARKS", "i can't swim good", "it's cold", "is that a fin", "sarah pls", "throw the tube!!", "it's circling", "tell my mom i love her", "i felt something touch my leg"];
 const JAKE_PUSHED = [
-  "TING.", "again??", "why", "i'm starting to think this is on purpose", "halfway. i think.",
-  "my shoes are gone", "sarah i believe in you", "ting i will remember this", "one more. please.", "I'M OUT. I'M OUT.",
+  "TING.", "again??", "i'm starting to think this is on purpose", "ting i will remember this", "one more. please.", "I'M OUT. I'M OUT.",
 ];
-const TING_PUSH = ["oops", "sorry bao bei", "slipped", "he's heavy", "lol", "reflex", "the wind did it", "sorry bao bei", "ok last one", "...fine"];
+const TING_PUSH = ["oops", "sorry bao bei", "slipped", "reflex", "sorry bao bei", "...fine"];
 const TING_IDLE = ["he'll be fine", "he's dramatic", "want a snack?", "nice throw", "lol", "i'll get a towel", "sorry bao bei"];
 const SARAH_MISS = ["missed", "ugh", "closer", "hang on", "he keeps MOVING"];
 
@@ -573,7 +572,7 @@ function updateHud() {
 }
 
 const SHARK_FAR = 165, EAT_RADIUS = 26;
-const closeRate = () => 10.5 + G.saves * 0.9;   // px per second; level 1 gives ~16s, level 10 ~9s
+const closeRate = () => 10.5 + G.saves * 1.6;   // px per second; level 1 gives ~16s, level 5 ~10s
 function resetSharks() {
   G.sharks = [0, 1, 2].map((i) => ({ a: (i / 3) * Math.PI * 2 + Math.random(), r: SHARK_FAR + i * 10, speed: 0.5 + i * 0.15, dir: i % 2 ? -1 : 1 }));
 }
@@ -708,10 +707,10 @@ function update(dt) {
       G.saves++; updateHud();
       if (G.saves >= CONFIG.savesToWin) {
         setPhase("win");
-        say(JAKE_PUSHED[9], 4);
+        say(JAKE_PUSHED[JAKE_PUSHED.length - 1], 4);
         tingSay("...fine", 3);
         sarahSay("NO.", 3);
-        hint.textContent = "Ten. Ting gives up. Jake is on dry land.";
+        hint.textContent = "Five. Ting gives up. Jake is on dry land.";
         SFX.win();
         burst();
         const st = $("savedStats");
